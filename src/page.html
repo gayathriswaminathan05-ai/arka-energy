@@ -239,6 +239,8 @@ h2 em,h1 em,h3 em{font-style:normal;font-weight:400;color:var(--lagoon-2)}
 .live svg{width:44px;height:14px;opacity:.8}
 .hero-scrolled .live,.exploring .live{opacity:0;visibility:hidden;transition:opacity .5s,visibility 0s linear .5s}
 @media (max-width:620px){ .live{display:none} }
+@media (max-width:400px){ .hero-card{top:72px;padding:16px 16px 14px} .hero-card h1{font-size:25px;margin:9px 0 12px} .mini{display:none} }
+@media (max-height:520px) and (orientation:landscape){ .hero-card{top:70px;width:min(390px,48vw);padding:14px 16px 13px} .hero-card h1{font-size:23px;margin:8px 0 11px} .mini{display:none} .live{display:none} }
 /* notes pinned to the roof during the fly-in */
 .note{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;will-change:transform;
   opacity:clamp(0, min(calc((var(--hp) - var(--a)) * 14), calc((var(--b) - var(--hp)) * 14)), 1)}

@@ -2389,7 +2389,9 @@ function frame() {
   const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
   visible = winEls.some(isOnScreen) || first || !!VIEW;
   const cellsNear = !VIEW && paperEls.some(el => { const r = el.getBoundingClientRect(); return r.bottom > -200 && r.top < innerHeight + 200; });
-  if (!visible) { if (cellsNear) renderCells(t, dt); return; }
+  if (!visible) {   // only page sections on screen: no 3D frame, but the story's time still follows the scroll
+    if (!VIEW) { const S0 = choreograph(); cam.tod = lerp(cam.tod, S0.tod, 1 - Math.exp(-dt * 2.5)); updateClock(S0); }
+    if (cellsNear) renderCells(t, dt); return; }
   const S = choreograph(); adaptResolution(dt);
   const k = first ? 1 : 1 - Math.exp(-dt * 3.4);
   cam.pos.lerp(want.pos, k); cam.tgt.lerp(want.tgt, k);
@@ -2465,16 +2467,19 @@ function frame() {
   noteEls.forEach((el, i) => { const on = S.w.hero > .5 && S.heroP > +el.dataset.a - .01 && S.heroP < +el.dataset.b + .01; el.style.visibility = on ? '' : 'hidden';
     if (on) { tmpV.copy(NOTE_AT[i] || NOTE_AT[0]).project(camera); el.style.transform = `translate(${((tmpV.x * .5 + .5) * W).toFixed(1)}px,${((-tmpV.y * .5 + .5) * Hh).toFixed(1)}px)`; } });
   flames.flame.visible = flames.halo.visible = flameU.uI.value > .005;
+  updateClock(S);
+  composer.render(dt);
+  if (cellsNear) renderCells(t, dt);
+  if (first) first = false;
+  if (!revealed && ++warmFrames >= 4) { revealed = true; perf.hold = 2.5; LOAD(1, 'Welcome home'); setTimeout(() => { root.classList.add('world-ready'); window.dispatchEvent(new Event('arka:ready')); }, 700); }
+}
+function updateClock(S) {
   if (clockEl) {
     let m = clockAt(cam.tod) + (S.w.night > .5 ? S.nightP * 14 : 0);
     m = Math.round(m) % 1440; const hh = Math.floor(m / 60), mm = m % 60, txt = `${(hh % 12) || 12}:${String(mm).padStart(2, '0')} ${hh < 12 ? 'AM' : 'PM'}`;
     const label = S.w.rain > .5 ? 'Monsoon' : txt;
     if (label !== lastClock) { lastClock = label; clockEl.querySelector('b').textContent = label; clockEl.classList.toggle('moon', S.w.rain <= .5 && (hh >= 19 || hh < 6)); clockEl.classList.toggle('rain', S.w.rain > .5); }
   }
-  composer.render(dt);
-  if (cellsNear) renderCells(t, dt);
-  if (first) first = false;
-  if (!revealed && ++warmFrames >= 4) { revealed = true; perf.hold = 2.5; LOAD(1, 'Welcome home'); setTimeout(() => { root.classList.add('world-ready'); window.dispatchEvent(new Event('arka:ready')); }, 700); }
 }
 document.fonts?.ready.then(() => { drawAppFull(0); drawPhone(phone.userData.cv); phone.userData.tex.needsUpdate = true; });
 addEventListener('load', measure);

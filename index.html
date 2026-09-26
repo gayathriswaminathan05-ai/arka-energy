@@ -239,6 +239,8 @@ h2 em,h1 em,h3 em{font-style:normal;font-weight:400;color:var(--lagoon-2)}
 .live svg{width:44px;height:14px;opacity:.8}
 .hero-scrolled .live,.exploring .live{opacity:0;visibility:hidden;transition:opacity .5s,visibility 0s linear .5s}
 @media (max-width:620px){ .live{display:none} }
+@media (max-width:400px){ .hero-card{top:72px;padding:16px 16px 14px} .hero-card h1{font-size:25px;margin:9px 0 12px} .mini{display:none} }
+@media (max-height:520px) and (orientation:landscape){ .hero-card{top:70px;width:min(390px,48vw);padding:14px 16px 13px} .hero-card h1{font-size:23px;margin:8px 0 11px} .mini{display:none} .live{display:none} }
 /* notes pinned to the roof during the fly-in */
 .note{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;will-change:transform;
   opacity:clamp(0, min(calc((var(--hp) - var(--a)) * 14), calc((var(--b) - var(--hp)) * 14)), 1)}
@@ -3297,7 +3299,9 @@ function frame() {
   const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
   visible = winEls.some(isOnScreen) || first || !!VIEW;
   const cellsNear = !VIEW && paperEls.some(el => { const r = el.getBoundingClientRect(); return r.bottom > -200 && r.top < innerHeight + 200; });
-  if (!visible) { if (cellsNear) renderCells(t, dt); return; }
+  if (!visible) {   // only page sections on screen: no 3D frame, but the story's time still follows the scroll
+    if (!VIEW) { const S0 = choreograph(); cam.tod = lerp(cam.tod, S0.tod, 1 - Math.exp(-dt * 2.5)); updateClock(S0); }
+    if (cellsNear) renderCells(t, dt); return; }
   const S = choreograph(); adaptResolution(dt);
   const k = first ? 1 : 1 - Math.exp(-dt * 3.4);
   cam.pos.lerp(want.pos, k); cam.tgt.lerp(want.tgt, k);
@@ -3373,16 +3377,19 @@ function frame() {
   noteEls.forEach((el, i) => { const on = S.w.hero > .5 && S.heroP > +el.dataset.a - .01 && S.heroP < +el.dataset.b + .01; el.style.visibility = on ? '' : 'hidden';
     if (on) { tmpV.copy(NOTE_AT[i] || NOTE_AT[0]).project(camera); el.style.transform = `translate(${((tmpV.x * .5 + .5) * W).toFixed(1)}px,${((-tmpV.y * .5 + .5) * Hh).toFixed(1)}px)`; } });
   flames.flame.visible = flames.halo.visible = flameU.uI.value > .005;
+  updateClock(S);
+  composer.render(dt);
+  if (cellsNear) renderCells(t, dt);
+  if (first) first = false;
+  if (!revealed && ++warmFrames >= 4) { revealed = true; perf.hold = 2.5; LOAD(1, 'Welcome home'); setTimeout(() => { root.classList.add('world-ready'); window.dispatchEvent(new Event('arka:ready')); }, 700); }
+}
+function updateClock(S) {
   if (clockEl) {
     let m = clockAt(cam.tod) + (S.w.night > .5 ? S.nightP * 14 : 0);
     m = Math.round(m) % 1440; const hh = Math.floor(m / 60), mm = m % 60, txt = `${(hh % 12) || 12}:${String(mm).padStart(2, '0')} ${hh < 12 ? 'AM' : 'PM'}`;
     const label = S.w.rain > .5 ? 'Monsoon' : txt;
     if (label !== lastClock) { lastClock = label; clockEl.querySelector('b').textContent = label; clockEl.classList.toggle('moon', S.w.rain <= .5 && (hh >= 19 || hh < 6)); clockEl.classList.toggle('rain', S.w.rain > .5); }
   }
-  composer.render(dt);
-  if (cellsNear) renderCells(t, dt);
-  if (first) first = false;
-  if (!revealed && ++warmFrames >= 4) { revealed = true; perf.hold = 2.5; LOAD(1, 'Welcome home'); setTimeout(() => { root.classList.add('world-ready'); window.dispatchEvent(new Event('arka:ready')); }, 700); }
 }
 document.fonts?.ready.then(() => { drawAppFull(0); drawPhone(phone.userData.cv); phone.userData.tex.needsUpdate = true; });
 addEventListener('load', measure);
