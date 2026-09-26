@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arka Energy — Rooftop solar for Kerala homes</title>
+<meta name="description" content="Arka Energy designs, installs and maintains rooftop solar and battery backup for Kerala homes — from heritage tharavadus to new builds.">
+<meta name="theme-color" content="#0F3B37">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tenor+Sans&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+} }
+</script>
+<style>
+/* ============================================================
+   ARKA ENERGY — design tokens
+   cool paper by day · backwater teal + kasavu gold as the brand
+   ============================================================ */
+:root{
+  --cream:#F2F2EE; --paper:#FAFAF8; --sand:#E7E8E4;
+  --lagoon:#0F3B37; --lagoon-2:#1C5B53; --lagoon-3:#2E7A6F; --lagoon-ink:#0C1B1A; --mist:#DCE8E4;
+  --gold:#C9963A; --gold-2:#E7C27A; --gold-3:#F6DEA6; --ember:#E2703A;
+  --slate:#3D5467; --ink:#14171B; --muted:#5B636B; --line:rgba(20,23,27,.12);
+  --t-cream:#EEF0EA; --t-muted:#9DB0AB; --t-line:rgba(238,240,234,.13);
+  --cell:calc((100vw - 2 * var(--gutter)) / 3);
+  --noise:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --serif:"Tenor Sans", "Geist", ui-sans-serif, system-ui, sans-serif;
+  --sans:"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  
+  --gutter:clamp(16px, 3.6vw, 56px);
+  --ease:cubic-bezier(.22,.8,.2,1);
+  --hp:0;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+body{margin:0;background:var(--lagoon-ink);color:var(--ink);font:400 16px/1.55 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden;text-rendering:optimizeLegibility}
+img{display:block;max-width:100%}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--lagoon-3);outline-offset:3px;border-radius:6px}
+.dark :focus-visible{outline-color:var(--gold-2)}
+
+#world{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;background:#dfe6ea}
+main,footer{position:relative;z-index:1}
+section{position:relative}
+.win{background:transparent}
+.no-webgl #world{display:none}
+.no-webgl .win{background:linear-gradient(180deg,#cfe0ea,#9fb9c4 60%,#2a3a40)}
+.no-webgl #night,.no-webgl #quote{background:linear-gradient(180deg,#1b2436,#0c1113)}
+
+/* ---------- shared type ---------- */
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--slate)}
+.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--lagoon-3);box-shadow:0 0 0 4px rgba(46,122,111,.16)}
+.dark .eyebrow,.eyebrow.lt{color:var(--gold-2)}
+.dark .eyebrow::before,.eyebrow.lt::before{background:var(--gold-2);box-shadow:0 0 0 4px rgba(231,194,122,.16)}
+h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-.012em;margin:0}
+h2{font-size:clamp(30px,3.3vw,46px);line-height:1.08}
+h2 em,h1 em,h3 em{font-style:normal;font-weight:400;color:var(--lagoon-2)}
+.dark h2 em,.glass.night h2 em,.night-card h2 em,.rain-card h2 em{color:var(--gold-2)}
+.lede{font-size:17px;line-height:1.55;color:var(--muted);max-width:520px}
+.dark .lede{color:var(--t-muted)}
+.mono{font-family:var(--mono)}
+
+/* ---------- buttons: the brand CTA is a small sunset over the backwater, edge to edge ---------- */
+.btn{position:relative;display:inline-flex;align-items:center;gap:10px;border-radius:999px;padding:14px 20px;font:600 14px/1 var(--sans);text-decoration:none;border:0;cursor:pointer;transition:transform .25s var(--ease),background .25s,box-shadow .35s;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn.dark{background:var(--ink);color:var(--cream)}
+.btn.ghost{background:transparent;color:inherit;padding-left:4px;padding-right:4px}
+.btn.ghost span{transition:transform .25s var(--ease)}
+.btn.ghost:hover span{transform:translateY(2px)}
+.btn.cta{--hz:57%;overflow:hidden;isolation:isolate;color:#F8F3E7;background:#0F3B37;padding:15px 78px 15px 20px;min-height:48px;text-shadow:0 1px 10px rgba(0,0,0,.45);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 1px 0 rgba(255,255,255,.2),0 14px 30px -16px rgba(15,59,55,.85)}
+.btn.cta.sm{padding:12px 66px 12px 18px;min-height:42px;font-size:13.5px}
+.btn.cta:hover{box-shadow:inset 0 0 0 1px rgba(255,255,255,.2),0 0 0 5px rgba(231,194,122,.2),0 18px 34px -16px rgba(15,59,55,.9)}
+.btn.cta .scene{position:absolute;inset:0;z-index:-1;border-radius:inherit;overflow:hidden;pointer-events:none;
+  background:
+   radial-gradient(110px 46px at 84% var(--hz),rgba(255,190,112,.78),rgba(255,150,90,.28) 45%,rgba(255,150,90,0) 76%),
+   linear-gradient(180deg,#0B302C 0%,#1A4A45 calc(var(--hz) - 16%),#5F5A4E calc(var(--hz) - 1%),#0F3B37 var(--hz),#0A2B28 100%)}
+.btn.cta .scene::after{content:"";position:absolute;left:0;right:0;top:var(--hz);bottom:0;z-index:3;
+  background:
+   radial-gradient(9px 26px at 84% 0%,rgba(255,214,150,.95),rgba(255,190,110,0) 75%) no-repeat,
+   repeating-linear-gradient(180deg,rgba(255,226,170,0) 0 3px,rgba(255,226,170,.15) 3px 4px),
+   linear-gradient(180deg,#123F3A,#0A2B28);
+  background-size:100% 100%,100% 8px,100% 100%;animation:shimmer 1.8s linear infinite}
+.btn.cta .sun{position:absolute;left:84%;top:22%;width:17px;height:17px;margin:-8.5px 0 0 -8.5px;border-radius:50%;z-index:2;
+  background:radial-gradient(circle,#FFF8E4 0 36%,#FFD58A 64%,#F5A24F 100%);box-shadow:0 0 14px 5px rgba(255,190,110,.6);animation:sunset 9s cubic-bezier(.45,.05,.55,.95) infinite}
+.btn.cta:hover .sun{animation-duration:4.5s}
+.btn.cta.gold{--hz:76%;color:#0C1B1A;text-shadow:0 1px 8px rgba(255,240,210,.6)}
+.btn.cta.gold .scene{background:radial-gradient(110px 46px at 84% var(--hz),rgba(255,246,214,.95),rgba(255,226,170,.4) 45%,rgba(255,226,170,0) 76%),linear-gradient(180deg,#F4DCA4 0%,#EFC98C calc(var(--hz) - 1%),#1C5B53 var(--hz),#0F3B37 100%)}
+.btn.cta.gold .scene::after{background:radial-gradient(9px 16px at 84% 0%,rgba(255,236,190,.95),rgba(255,236,190,0) 75%) no-repeat,repeating-linear-gradient(180deg,rgba(255,236,190,0) 0 2px,rgba(255,236,190,.2) 2px 3px),linear-gradient(180deg,#1C5B53,#0F3B37);background-size:100% 100%,100% 6px,100% 100%}
+@keyframes sunset{0%{top:18%;opacity:0}8%{opacity:1}58%{top:calc(var(--hz) - 4%)}72%{top:calc(var(--hz) + 12%);opacity:1}74%{opacity:0}100%{top:18%;opacity:0}}
+@keyframes shimmer{to{background-position:0 0,0 8px,0 0}}
+@media (prefers-reduced-motion: reduce){ .btn.cta .sun,.btn.cta .scene::after{animation:none} .btn.cta .sun{top:40%} }
+
+/* off-white paper with a fine grain */
+.paper{background-color:var(--cream);isolation:isolate}
+.paper::after,.grain::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background-image:var(--noise);background-size:220px 220px;opacity:.16;mix-blend-mode:multiply}
+.paper>*{position:relative;z-index:1}
+.modgrid{--gl:rgba(20,23,27,.09);
+  background-image:linear-gradient(to right,var(--gl) 1px,transparent 1px),linear-gradient(to bottom,var(--gl) 1px,transparent 1px);
+  background-size:var(--cell) var(--cell);background-position:var(--gutter) 0}
+.dark .modgrid,.modgrid.on-dark{--gl:rgba(238,240,234,.05)}
+.ticks{position:relative}
+.ticks::after{content:"";position:absolute;inset:-7px;pointer-events:none;--c:currentColor;opacity:.3;
+  background:
+   linear-gradient(var(--c),var(--c)) 0 0/11px 1px, linear-gradient(var(--c),var(--c)) 0 0/1px 11px,
+   linear-gradient(var(--c),var(--c)) 100% 0/11px 1px, linear-gradient(var(--c),var(--c)) 100% 0/1px 11px,
+   linear-gradient(var(--c),var(--c)) 0 100%/11px 1px, linear-gradient(var(--c),var(--c)) 0 100%/1px 11px,
+   linear-gradient(var(--c),var(--c)) 100% 100%/11px 1px, linear-gradient(var(--c),var(--c)) 100% 100%/1px 11px;
+  background-repeat:no-repeat}
+
+/* ---------- liquid glass: very clear panes — bright rim, soft inner light, the scene bent at the edges ---------- */
+.glass{position:relative;isolation:isolate;border:0;
+  background:rgba(252,253,253,.24);
+  -webkit-backdrop-filter:blur(14px) saturate(1.7) brightness(1.12);backdrop-filter:blur(14px) saturate(1.7) brightness(1.12);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.34),
+    inset 1.5px 2px 0 -1px rgba(255,255,255,.95),
+    inset -1.5px -2px 0 -1px rgba(255,255,255,.45),
+    inset 0 18px 26px -20px rgba(255,255,255,.7),
+    inset 0 -22px 30px -26px rgba(255,255,255,.5),
+    0 1px 2px rgba(10,20,30,.06),0 22px 50px -26px rgba(10,24,30,.4)}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
+  background:linear-gradient(128deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,.06) 30%,rgba(255,255,255,0) 52%,rgba(255,255,255,.06) 78%,rgba(255,255,255,.2) 100%)}
+.glass .eyebrow{color:#15242e}
+.glass:not(.night) h1 em,.glass:not(.night) h2 em{color:var(--lagoon)}
+.glass .eyebrow::before{background:var(--lagoon-2)}
+.glass.night .eyebrow{color:var(--gold-2)}
+.glass.night{color:var(--t-cream);background:rgba(12,20,24,.2);
+  -webkit-backdrop-filter:blur(18px) saturate(1.5) brightness(.86);backdrop-filter:blur(18px) saturate(1.5) brightness(.86);
+  box-shadow:inset 0 0 0 1px rgba(255,236,210,.14),inset 1.5px 2px 0 -1px rgba(255,236,210,.5),inset -1.5px -2px 0 -1px rgba(255,236,210,.18),inset 0 18px 26px -22px rgba(255,236,210,.3),0 24px 60px -24px rgba(0,0,0,.6)}
+.glass.night::before{background:linear-gradient(128deg,rgba(255,236,210,.14) 0%,rgba(255,236,210,0) 40%,rgba(255,236,210,0) 70%,rgba(255,236,210,.07) 100%)}
+.ico{width:22px;height:22px;flex:none;color:var(--lagoon-2);fill:currentColor}
+
+/* reveal on scroll */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){ .reveal{opacity:1;transform:none;transition:none} }
+
+/* ---------- loader: sunrise over the tharavadu — the sun climbs to noon as the world loads ---------- */
+#loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--cream) var(--noise);transition:opacity 1.1s var(--ease),visibility 1.1s;--lp:0}
+.world-ready #loader,.no-webgl #loader{opacity:0;visibility:hidden}
+#loader .inner{display:grid;justify-items:center;gap:18px;color:var(--ink);width:min(320px,80vw)}
+#loader svg{width:100%;height:auto;overflow:visible}
+#loader .sky{transition:opacity .3s}
+#loader .cell{transition:fill .5s var(--ease)}
+#loader .cell.on{fill:#1C5B53}
+#loader .cell.on.glint{fill:#2E7A6F}
+#loader .row{display:flex;justify-content:space-between;align-items:baseline;width:100%;gap:16px}
+#loader .pct{font:400 34px/1 var(--serif);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+#loader .pct small{font:500 11px var(--mono);letter-spacing:.1em;color:var(--muted);margin-left:3px}
+#loader .cap{font:500 10.5px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:right;min-height:14px;transition:opacity .3s}
+#loader .bar{position:relative;width:100%;height:2px;border-radius:2px;background:rgba(20,23,27,.1);overflow:hidden}
+#loader .bar i{position:absolute;inset:0;width:calc(var(--lp) * 100%);background:linear-gradient(90deg,var(--gold),var(--lagoon-2));transition:width .35s var(--ease)}
+@media (prefers-reduced-motion: reduce){ #loader *{transition:none!important} }
+
+/* ---------- floating nav (liquid glass) ---------- */
+.nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:2px;padding:6px 6px 6px 14px;border-radius:999px;color:var(--ink);max-width:calc(100vw - 24px);transition:color .6s}
+.nav.glass{background:rgba(252,253,253,.22)}
+.nav.dark{color:var(--t-cream)}
+.nav.dark.glass{background:rgba(14,22,26,.26);box-shadow:inset 0 0 0 1px rgba(255,236,210,.14),inset 1.5px 2px 0 -1px rgba(255,236,210,.45),0 16px 40px -18px rgba(0,0,0,.6)}
+.nav.dark.glass::before{opacity:.35}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none;margin-right:10px;white-space:nowrap}
+.brand svg{width:24px;height:24px;flex:none}
+.brand b{font:400 21px/1 var(--serif);letter-spacing:.01em}
+.brand i{font:500 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;opacity:.55;font-style:normal;margin-top:3px}
+.clock{display:inline-flex;align-items:center;gap:7px;margin:0 8px 0 2px;padding:7px 10px 7px 8px;border-radius:999px;background:rgba(20,23,27,.06);font:500 11px/1 var(--mono);letter-spacing:.06em;white-space:nowrap}
+.nav.dark .clock{background:rgba(255,240,220,.08)}
+.clock i{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,#FFE9B0 0 35%,#F2B55A 70%);box-shadow:0 0 0 3px rgba(242,181,90,.2);transition:background .6s,box-shadow .6s}
+.clock.rain i{background:radial-gradient(circle at 50% 40%,#dfe6ea 0 45%,transparent 47%),radial-gradient(circle at 30% 55%,#dfe6ea 0 32%,transparent 34%);box-shadow:none}
+.clock.moon i{background:radial-gradient(circle at 65% 35%,transparent 0 38%,#E9EDF7 40%);box-shadow:0 0 8px rgba(200,215,255,.5)}
+.nav a.link{white-space:nowrap;font:500 13.5px/1 var(--sans);opacity:.8;padding:11px 11px;border-radius:999px;text-decoration:none;transition:opacity .2s,background .2s}
+.nav a.link:hover{opacity:1;background:rgba(30,24,18,.06)}
+.nav.dark a.link:hover{background:rgba(255,240,220,.08)}
+.nav .btn{margin-left:6px}
+@media (max-width:1100px){ .nav a.link{display:none} .brand i{display:none} }
+@media (max-width:420px){ .clock{padding:7px 8px;margin:0 4px} .nav .btn{padding-right:14px} .nav .btn .lbl-long{display:none} }
+
+/* ---------- 1 · hero (pinned: scrolling flies you onto the roof) ---------- */
+#hero{height:340svh}
+#hero .pin{position:sticky;top:0;height:100svh;min-height:600px;overflow:hidden}
+.fade-out{transition:opacity .6s var(--ease),transform .75s var(--ease),filter .6s var(--ease),visibility 0s linear 0s}
+.hero-card{position:absolute;left:var(--gutter);top:clamp(92px,13vh,116px);width:min(344px,calc(100vw - 32px));padding:18px 18px 16px;border-radius:24px}
+.hero-card h1{font-size:clamp(25px,2.1vw,31px);line-height:1.06;margin:11px 0 14px}
+.hero-card .row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.mini{list-style:none;margin:14px 0 0;padding:12px 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid rgba(20,23,27,.12)}
+.mini li{display:grid;grid-template-columns:22px 1fr;column-gap:8px;align-items:center}
+.mini b{font:400 16px/1 var(--serif);letter-spacing:-.01em}
+.mini small{grid-column:2;font:500 9.5px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#15242e;margin-top:3px}
+.mini .ico{grid-row:span 2;width:20px;height:20px}
+.scroll-note{display:flex;align-items:center;gap:8px;margin:14px 0 0;font:500 10.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#23394a}
+.scroll-note i{width:14px;height:20px;border:1.4px solid currentColor;border-radius:8px;position:relative}
+.scroll-note i::after{content:"";position:absolute;left:50%;top:4px;width:2px;height:4px;margin-left:-1px;border-radius:2px;background:currentColor;animation:wheel 1.6s var(--ease) infinite}
+@keyframes wheel{0%{transform:translateY(0);opacity:1}100%{transform:translateY(7px);opacity:0}}
+.hero-scrolled .hero-card,.exploring .hero-card{opacity:0;transform:translateY(-14px) scale(.985);filter:blur(6px);pointer-events:none;visibility:hidden;transition:opacity .6s var(--ease),transform .75s var(--ease),filter .6s var(--ease),visibility 0s linear .6s}
+.scroll-cue{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);display:grid;justify-items:center;gap:8px;font:500 10px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:rgba(248,246,238,.85);text-shadow:0 1px 8px rgba(0,0,0,.4);transition:opacity .5s}
+.scroll-cue i{width:1px;height:30px;background:linear-gradient(rgba(248,246,238,.85),transparent);animation:cue 2.2s var(--ease) infinite;transform-origin:top}
+@keyframes cue{0%{transform:scaleY(0)}60%{transform:scaleY(1)}100%{transform:scaleY(1);opacity:0}}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(58,160,110,0)}100%{box-shadow:0 0 0 0 rgba(58,160,110,0)}}
+.hero-scrolled .scroll-cue{opacity:0;visibility:hidden;transition:opacity .5s,visibility 0s linear .5s}
+/* tertiary: a whisper-quiet live reading, bottom right */
+.live{position:absolute;right:var(--gutter);bottom:18px;display:flex;align-items:center;gap:10px;padding:7px 12px 7px 10px;border-radius:999px;
+  background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);
+  color:rgba(250,248,240,.92);font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;text-shadow:0 1px 6px rgba(0,0,0,.45)}
+.live i{width:6px;height:6px;border-radius:50%;background:#5fd08e;box-shadow:0 0 0 0 rgba(95,208,142,.5);animation:pulse 2s infinite}
+.live b{font:400 15px/1 var(--serif);letter-spacing:0;text-transform:none}
+.live svg{width:44px;height:14px;opacity:.8}
+.hero-scrolled .live,.exploring .live{opacity:0;visibility:hidden;transition:opacity .5s,visibility 0s linear .5s}
+@media (max-width:620px){ .live{display:none} }
+/* notes pinned to the roof during the fly-in */
+.note{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;will-change:transform;
+  opacity:clamp(0, min(calc((var(--hp) - var(--a)) * 14), calc((var(--b) - var(--hp)) * 14)), 1)}
+.note .dot{position:absolute;left:-6px;top:-6px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.35),0 0 0 1px rgba(15,59,55,.4) inset}
+.note .dot::after{content:"";position:absolute;inset:-10px;border-radius:50%;border:1px solid rgba(255,255,255,.8);animation:ping 2.4s var(--ease) infinite}
+@keyframes ping{0%{transform:scale(.4);opacity:1}100%{transform:scale(1.6);opacity:0}}
+.note .leader{position:absolute;left:0;bottom:0;width:56px;height:1px;background:rgba(255,255,255,.85);transform-origin:0 50%;transform:rotate(-40deg)}
+.note .nbox{position:absolute;left:44px;bottom:36px;width:min(250px,62vw);padding:13px 15px 14px;border-radius:18px}
+.note.l .leader{transform:rotate(-140deg)} .note.l .nbox{left:auto;right:44px}
+.note .nbox span{display:block;font:500 10.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gold-2);margin-bottom:7px}
+.note .nbox b{display:block;font:400 18px/1.16 var(--serif);letter-spacing:-.01em}
+@media (max-width:620px){
+  .hero-card{top:78px;padding:18px 18px 15px;border-radius:22px}
+  .hero-card h1{font-size:28px;margin:10px 0 14px}
+  .mini{margin-top:14px;padding-top:12px}
+  .mini b{font-size:15px}
+  .scroll-note{display:none}
+  .note{transform:none!important;left:16px;right:16px;top:auto;bottom:22px;width:auto;height:auto}
+  .note .dot,.note .leader{display:none}
+  .note .nbox,.note.l .nbox{position:relative;left:auto;right:auto;bottom:auto;width:auto}
+  .energy-intro{padding:16px 18px}
+  .energy-intro h2{font-size:25px;margin:10px 0 6px}
+  .calc{margin-top:34vh}
+  .q-copy{margin-top:20vh}
+  .q-copy h2{font-size:36px}
+}
+
+/* ---------- 2 · energy: golden hour + the calculator ---------- */
+#energy{min-height:130svh;padding:clamp(96px,14vh,130px) var(--gutter) 60px;display:grid;grid-template-columns:minmax(0,380px) 1fr minmax(310px,360px);gap:24px;align-items:start}
+.energy-intro{padding:22px;border-radius:26px}
+.energy-intro h2{font-size:clamp(26px,2.4vw,34px);margin:12px 0 10px}
+.eflow{display:block;width:100%;height:auto;overflow:visible}
+.eflow .base{fill:none;stroke:rgba(15,59,55,.14);stroke-linecap:round}
+.eflow .fl{fill:none;stroke:#1C5B53;stroke-linecap:round;stroke-dasharray:1 8;animation:dash 1.1s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-9}}
+.eflow .k{font:600 9.5px var(--mono);letter-spacing:.12em;fill:#15242e}
+.eflow .v{font:400 19px var(--serif);fill:#14171B}
+.eflow .v.t{fill:#1C5B53}
+.calc{grid-column:3;padding:20px;border-radius:26px;position:sticky;top:96px}
+.calc .q{display:block;font:500 10.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#15242e;margin:14px 0 8px}
+.bill{display:flex;align-items:baseline;gap:6px;border-bottom:1px solid rgba(20,23,27,.16);padding-bottom:6px}
+.bill span{font:400 28px/1 var(--serif);color:#3c434a}
+.bill input{border:0;background:transparent;font:400 38px/1 var(--serif);letter-spacing:-.01em;width:100%;outline:none;padding:0}
+.bill small{font-size:12.5px;color:#15242e;white-space:nowrap}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;margin:8px 0 2px;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:linear-gradient(90deg,var(--lagoon-2) var(--p,30%),rgba(20,23,27,.16) var(--p,30%))}
+input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:rgba(20,23,27,.16)}
+input[type=range]::-moz-range-progress{height:4px;border-radius:4px;background:var(--lagoon-2)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--paper);border:1px solid rgba(20,23,27,.2);box-shadow:0 2px 8px rgba(10,30,30,.25);margin-top:-9px}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--paper);border:1px solid rgba(20,23,27,.2)}
+.save-big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:14px 0 12px}
+.save-big span,.save-big small{font:500 10.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#15242e}
+.save-big b{font:400 46px/1 var(--serif);letter-spacing:-.01em;color:var(--lagoon)}
+.vs{display:grid;gap:7px;margin-bottom:14px}
+.vs .r{display:grid;grid-template-columns:70px 1fr 64px;align-items:center;gap:10px;font-size:12px;color:#15242e;font-weight:500}
+.vs .bar{height:10px;border-radius:3px;background:rgba(20,23,27,.2);transition:width .8s var(--ease)}
+.vs .bar.o{background:var(--lagoon-2)}
+.vs b{font:500 12.5px var(--sans);color:var(--ink);text-align:right}
+.mini3{list-style:none;margin:0;padding:12px 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border-top:1px solid rgba(20,23,27,.12)}
+.mini3 li{display:grid;gap:5px}
+.mini3 b{font:400 19px/1 var(--serif);letter-spacing:-.01em}
+.mini3 span{font:500 9.5px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#15242e}
+.fine{font:500 9.5px/1.3 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#26343e;margin:12px 0 0}
+@media (max-width:1180px){
+  #energy{grid-template-columns:1fr;min-height:auto;padding-top:clamp(84px,12vh,120px)}
+  .energy-intro{max-width:460px}
+  .calc{grid-column:1;position:relative;top:0;max-width:440px;margin-top:34vh}
+}
+
+/* ---------- 3 · how it works — each picture is a live render of this same house ---------- */
+.view-only main,.view-only footer,.view-only .nav,.view-only #loader{display:none}
+.paper3d{background:transparent;isolation:isolate}
+.paper3d::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;background-image:var(--noise);background-size:220px 220px;opacity:.14;mix-blend-mode:multiply}
+.no-webgl .paper3d{background:var(--cream)}
+#how{color:var(--ink);padding:calc(var(--cell) * .34) var(--gutter) calc(var(--cell) * .4)}
+#how .modgrid{position:absolute;inset:0;pointer-events:none;z-index:0}
+#how>*{position:relative;z-index:3}
+#how .head{margin-bottom:clamp(30px,4vw,48px)}
+#how h2{max-width:640px;margin-top:16px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.step .shot{position:relative;margin:0 0 16px;border-radius:16px;overflow:hidden;aspect-ratio:4/4.6;cursor:default;box-shadow:inset 0 0 0 1px rgba(20,23,27,.08)}
+.step .tag{position:absolute;left:12px;top:12px;padding:7px 10px;border-radius:999px;font:500 10px/1 var(--mono);letter-spacing:.1em;color:#F4F1E8;background:rgba(8,18,18,.42);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+.step .tag::before{display:none}
+.step .n{font:500 11px/1 var(--mono);letter-spacing:.12em;color:var(--lagoon-2);margin-bottom:8px}
+.step h3{display:flex;align-items:center;gap:9px;font:400 21px/1.15 var(--serif);letter-spacing:-.01em;margin:0 0 6px}
+.step h3 .ico{width:24px;height:24px}
+.step p{margin:0;font-size:14px;color:var(--muted);line-height:1.45}
+.step .flowline{height:1px;background:rgba(20,23,27,.2);margin:0 0 14px;position:relative}
+.step .flowline::after{content:"";position:absolute;right:-2px;top:-3px;border:3.5px solid transparent;border-left:6px solid rgba(20,23,27,.35)}
+.step:last-child .flowline::after{display:none}
+@media (max-width:980px){ .steps{grid-template-columns:repeat(4,76%);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:10px;margin-right:calc(-1*var(--gutter))} .step{scroll-snap-align:start} }
+
+/* ---------- 4 · parts: close crops of the same house, lit by a spotlight ---------- */
+#parts{position:relative;padding:0 var(--gutter)}
+.pgrid{position:relative;z-index:3;display:grid;grid-template-columns:repeat(3,1fr);border-left:1px solid var(--line);border-top:1px solid var(--line)}
+.pc{position:relative;aspect-ratio:1;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0;display:flex;flex-direction:column}
+.pc.title{grid-column:span 2;aspect-ratio:auto;justify-content:flex-end;padding:36px}
+.pc.title h2{margin:16px 0 12px;max-width:560px;font-size:clamp(34px,3.8vw,56px)}
+.pc.title p{margin:0;color:var(--muted);max-width:430px;font-size:15.5px}
+.pc.title p b{display:flex;width:max-content;align-items:center;gap:8px;margin-top:14px;font:500 11px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--lagoon-2)}
+.pc.obj{cursor:crosshair}
+.pc.obj .shot{flex:1;min-height:0}
+.pc.obj .cap{height:58px;flex:none;display:flex;align-items:center;gap:12px;padding:0 18px;border-top:1px solid var(--line);font:500 11px/1.25 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink);background:rgba(242,242,238,.55)}
+.pc.obj .cap i{font-style:normal;color:var(--lagoon-2)}
+.pc.obj .cap span{margin-left:auto;color:#5b636b;text-align:right}
+.pc.obj .lens{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;pointer-events:none;transition:opacity .4s,transform .4s var(--ease)}
+.pc.obj .lens::after{content:"";width:9px;height:9px;border-radius:50%;background:radial-gradient(circle,#fff 0 30%,#FFE2A8 60%,rgba(255,200,120,0) 72%);box-shadow:0 0 10px 3px rgba(255,220,160,.8)}
+.pc.obj:hover .lens{opacity:0;transform:scale(.6)}
+/* stat tiles: one number, one line */
+.pc.stat{justify-content:space-between;padding:26px 28px 28px}
+.pc.stat .ico{width:34px;height:34px;color:var(--lagoon-2)}
+.pc.stat b{display:block;font:400 clamp(56px,6vw,92px)/.9 var(--serif);letter-spacing:-.01em;color:var(--ink)}
+.pc.stat b sup{font-size:.34em;letter-spacing:0;vertical-align:.95em;margin-left:4px;color:var(--lagoon-2)}
+.pc.stat span{display:block;margin-top:12px;font-size:15px;line-height:1.4;color:var(--muted);max-width:240px}
+.pc.stat .viz{margin-top:16px}
+.pc.stat .bars{display:grid;gap:6px;max-width:240px}
+.pc.stat .bars i{display:block;height:8px;border-radius:3px;background:rgba(20,23,27,.16)}
+.pc.stat .bars i.o{width:15%;background:var(--lagoon-2)}
+/* the year chart */
+.pc.chart{grid-column:span 2;aspect-ratio:2/1;padding:24px 26px 18px;justify-content:space-between;background:rgba(250,250,248,.6)}
+.pc.chart .ch-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pc.chart .ch-head b{font:500 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--lagoon-2);white-space:nowrap}
+.pc.chart h3{font:400 clamp(24px,2.3vw,34px)/1.08 var(--serif);letter-spacing:-.01em;margin:10px 0 0}
+.yc{display:block;width:100%;flex:1;min-height:0;margin-top:6px;overflow:visible}
+.yc .mod{fill:#172538}
+.yc .modl{fill:none;stroke:rgba(255,255,255,.14);stroke-width:.6}
+.yc text{font:500 10px var(--mono);letter-spacing:.06em;fill:var(--muted);text-transform:uppercase}
+.yc .use{fill:none;stroke:var(--lagoon-3);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.yc .udot{fill:var(--paper);stroke:var(--lagoon-3);stroke-width:2}
+.yc .col .hit{fill:transparent}
+.yc .col:hover .mod{fill:#20344d}
+.yc .val{font:500 11px var(--mono);fill:var(--ink);opacity:0;transition:opacity .2s}
+.yc .col:hover .val{opacity:1}
+.ch-foot{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;font-size:12.5px;color:var(--muted);margin-top:6px}
+.ch-foot i{display:inline-block;vertical-align:middle;margin-right:7px}
+.ch-foot .sw1{width:18px;height:10px;border-radius:2px;background:#172538;box-shadow:inset 0 2px 0 var(--gold-2)}
+.ch-foot .sw2{width:18px;height:2px;border-radius:2px;background:var(--lagoon-3)}
+.ch-foot .tot{margin-left:auto;font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
+@media (max-width:900px){ .pgrid{grid-template-columns:repeat(2,1fr)} .pc.title{grid-column:span 2;padding:24px 18px} .pc.stat{padding:16px} .pc.stat b{font-size:48px} .pc.stat span{font-size:13px} .pc.obj .cap{height:auto;min-height:48px;padding:10px 12px;flex-wrap:wrap;gap:4px 8px;font-size:9.5px} .pc.obj .cap span{margin-left:0;text-align:left;width:100%} .pc.chart{aspect-ratio:auto;min-height:330px;padding:18px} .pc.m-hide{display:none} }
+@media (min-width:901px){ .pc.m-only{display:none} }
+@media (hover:none){ .spot-hint{display:none!important} }
+.scroll-hint{display:flex;align-items:center;gap:8px;margin:0 0 16px;font:500 10.5px/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#1a4a44}
+
+/* ---------- 5 · app: the phone at sunset ---------- */
+#app{height:190svh}
+#app .pin{position:sticky;top:0;height:100svh;display:flex;align-items:center;padding:0 var(--gutter)}
+.app-card{width:min(380px,100%);padding:22px;border-radius:26px}
+.app-card h2{font-size:clamp(28px,2.6vw,38px);margin:14px 0 18px}
+.tiles{list-style:none;margin:0 0 16px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tiles li{display:grid;gap:10px;padding:14px;border-radius:16px;background:rgba(255,255,255,.2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.3)}
+.tiles b{font:500 13.5px/1.2 var(--sans)}
+.tiles .ico{width:22px;height:22px;color:var(--lagoon)}
+.stores{display:flex;gap:8px;flex-wrap:wrap}
+.store{display:inline-flex;align-items:center;gap:9px;background:#0b0c0d;color:#fff;border-radius:10px;padding:7px 14px 7px 11px;text-decoration:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);transition:transform .2s var(--ease)}
+.store:hover{transform:translateY(-1px)}
+.store svg{width:22px;height:24px;flex:none}
+.store span{display:grid;gap:1px;font:600 17px/1 var(--sans);letter-spacing:-.01em}
+.store small{font:500 9.5px/1 var(--sans);letter-spacing:.02em;opacity:.9}
+@media (max-width:760px){ #app .pin{align-items:flex-end;padding-bottom:5vh} .app-card .tiles{display:none} }
+
+/* ---------- 6 · night: why the evening matters ---------- */
+#night{height:280svh;color:var(--t-cream)}
+#night .pin{position:sticky;top:0;height:100svh;overflow:hidden}
+.night-card{position:absolute;left:var(--gutter);bottom:clamp(22px,6vh,60px);width:min(420px,calc(100vw - 32px));padding:22px;border-radius:26px}
+.night-card .stage{display:grid}
+.night-card .stage>div{grid-area:1/1;transition:opacity .7s var(--ease),transform .8s var(--ease),filter .7s}
+.night-card h2{font-size:clamp(28px,2.8vw,40px);margin:12px 0 10px}
+.night-card .one{margin:0;font:500 10.5px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:rgba(238,240,234,.75)}
+.night-card .b{opacity:0;transform:translateY(10px);filter:blur(4px);pointer-events:none}
+.grid-down .night-card .a{opacity:0;transform:translateY(-10px);filter:blur(4px);pointer-events:none}
+.grid-down .night-card .b{opacity:1;transform:none;filter:none;pointer-events:auto}
+.status{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:18px;padding-top:16px;border-top:1px solid var(--t-line)}
+.st{display:inline-flex;align-items:center;gap:8px;padding:8px 11px;border-radius:999px;background:rgba(255,240,220,.08);font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:rgba(238,240,234,.9);white-space:nowrap}
+.st i{width:7px;height:7px;border-radius:50%;background:#58c08a;box-shadow:0 0 8px #58c08a;transition:background .4s,box-shadow .4s}
+.st .ico{width:15px;height:15px;color:rgba(238,240,234,.85)}
+.st.grid .off{display:none} .grid-down .st.grid .off{display:inline} .grid-down .st.grid .on{display:none}
+.grid-down .st.grid i{background:#e0533d;box-shadow:0 0 8px #e0533d}
+.gauge{display:flex;align-items:center;gap:10px;font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.gauge .batt{position:relative;width:62px;height:24px;border-radius:6px;box-shadow:inset 0 0 0 1.5px rgba(238,240,234,.7);padding:3px}
+.gauge .batt::after{content:"";position:absolute;right:-5px;top:8px;width:3px;height:8px;border-radius:0 2px 2px 0;background:rgba(238,240,234,.7)}
+.gauge .batt i{display:block;height:100%;width:82%;border-radius:3px;background:linear-gradient(90deg,#3fae6e,#7ad39a)}
+.grid-down .gauge .batt i{animation:drain 6s linear infinite alternate}
+@keyframes drain{to{width:78%}}
+.gauge b{font:400 22px/1 var(--serif);letter-spacing:-.01em;color:var(--gold-2)}
+.gauge small{opacity:0;transition:opacity .6s;color:rgba(238,240,234,.8)}
+.grid-down .gauge small{opacity:1}
+#night .scroll-cue{bottom:20px}
+@media (max-width:620px){ .night-card{bottom:14px;padding:18px} .night-card h2{font-size:27px} }
+
+/* ---------- 6b · monsoon: grey skies, still making power ---------- */
+#monsoon{height:200svh;color:var(--t-cream)}
+#monsoon .pin{position:sticky;top:0;height:100svh;overflow:hidden}
+.rain-card{position:absolute;right:var(--gutter);bottom:clamp(22px,6vh,60px);width:min(400px,calc(100vw - 32px));padding:22px;border-radius:26px}
+.rain-card h2{font-size:clamp(28px,2.7vw,38px);margin:12px 0 16px}
+.rv{display:grid;grid-template-columns:22px 92px 1fr auto;align-items:center;gap:10px;margin-bottom:10px;font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:rgba(238,240,234,.85)}
+.rv .ico{width:20px;height:20px;color:var(--gold-2)}
+.rv i{display:block;height:10px;border-radius:3px;background:rgba(238,240,234,.14);position:relative;overflow:hidden}
+.rv i::after{content:"";position:absolute;inset:0;width:var(--w);border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold-2))}
+.rv.wet i::after{background:linear-gradient(90deg,#6FB3A7,#9fd3c9)}
+.rv b{font:400 18px/1 var(--serif);letter-spacing:-.01em;color:var(--t-cream);text-transform:none}
+.rain-chips{list-style:none;margin:16px 0 0;padding:14px 0 0;border-top:1px solid var(--t-line);display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rain-chips li{display:grid;gap:8px;font:500 12.5px/1.3 var(--sans);color:rgba(238,240,234,.85)}
+.rain-chips .ico{width:22px;height:22px;color:#9fd3c9}
+@media (max-width:620px){ .rain-card{right:16px;left:16px;width:auto;bottom:14px;padding:18px} .rain-chips{grid-template-columns:1fr 1fr 1fr} .rain-chips li{font-size:11.5px} }
+
+/* ---------- 7 · map: an old chart of the Malabar coast, engraved in gold on backwater teal ---------- */
+#map{background:var(--lagoon-ink);color:var(--t-cream);padding:clamp(84px,10vw,130px) var(--gutter);overflow:hidden}
+#map .modgrid{position:absolute;inset:0;pointer-events:none;-webkit-mask-image:radial-gradient(ellipse at 70% 50%,#000 20%,transparent 70%);mask-image:radial-gradient(ellipse at 70% 50%,#000 20%,transparent 70%)}
+.map-wrap{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:48px;align-items:center}
+.map-wrap h2{margin:16px 0 14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:26px 0 30px;border-top:1px solid var(--t-line)}
+.stats div{padding:16px 16px 0 0}
+.stats b{display:block;font:400 clamp(30px,3vw,44px)/1 var(--serif);letter-spacing:-.01em;color:var(--gold-2)}
+.stats span{font:500 10.5px/1.3 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t-muted)}
+.kerala{position:relative;justify-self:center;width:min(100%,540px)}
+.kerala svg{width:100%;height:auto;display:block}
+.kerala .tip{position:absolute;pointer-events:none;transform:translate(-50%,-130%);background:rgba(12,27,26,.86);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:inset 0 0 0 1px rgba(231,194,122,.35);color:var(--t-cream);padding:8px 12px 9px;border-radius:12px;font:italic 400 16px/1.1 var(--serif);white-space:nowrap;opacity:0;transition:opacity .2s}
+.kerala .tip small{display:block;font:500 10px/1.2 var(--mono);font-style:normal;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-2);margin-top:5px}
+.dist{cursor:pointer}
+.dist .seal{transition:transform .35s var(--ease);transform-box:fill-box;transform-origin:center}
+.dist:hover .seal,.dist:focus .seal{transform:scale(1.35)}
+.route{stroke-dasharray:2 5;animation:flow 4s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-42}}
+@media (max-width:900px){ .map-wrap{grid-template-columns:1fr} }
+
+/* ---------- 8 · stories ---------- */
+#stories{background:var(--lagoon-ink);color:var(--t-cream);padding:clamp(60px,8vw,110px) var(--gutter) clamp(84px,10vw,130px)}
+#stories .head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:24px;margin-bottom:40px}
+#stories h2{margin-top:16px}
+.stories{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.story{position:relative;margin:0;border-radius:18px;overflow:hidden;aspect-ratio:3/4;background:#1a2826;isolation:isolate}
+.story img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform 1.4s var(--ease)}
+.story:hover img{transform:scale(1.035)}
+.story::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(8,14,13,0) 35%,rgba(8,14,13,.55) 62%,rgba(8,14,13,.92) 100%)}
+.story figcaption{position:absolute;left:0;right:0;bottom:0;padding:24px}
+.story blockquote{margin:0 0 16px;font:400 clamp(20px,1.7vw,25px)/1.2 var(--serif);letter-spacing:-.01em}
+.story .who{font:500 13px var(--sans)}
+.story .who span{display:block;font:500 10.5px/1.5 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--t-muted);margin-top:4px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.chip{font:500 11px/1 var(--mono);padding:7px 9px;border-radius:999px;background:rgba(238,240,234,.1);border:1px solid rgba(238,240,234,.14)}
+.chip.o{background:rgba(231,194,122,.16);border-color:rgba(231,194,122,.4);color:var(--gold-3)}
+@media (max-width:900px){ .stories{grid-template-columns:repeat(3,82%);overflow-x:auto;scroll-snap-type:x mandatory;margin-right:calc(-1*var(--gutter))} .story{scroll-snap-align:start} }
+
+/* ---------- 9 · compare ---------- */
+#compare{background:var(--lagoon-ink);color:var(--t-cream);padding:0 var(--gutter) clamp(84px,10vw,130px)}
+.cmp{max-width:980px;margin:0 auto}
+.cmp .head{text-align:center;margin-bottom:34px}
+.cmp h2{margin-top:16px}
+.table{border-top:1px solid var(--t-line)}
+.table .tr{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:16px;padding:16px 0;border-bottom:1px solid var(--t-line);align-items:baseline}
+.table .th{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--t-muted)}
+.table .th.o{color:var(--gold-2)}
+.table .k{font:500 10.5px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t-muted)}
+.table .v{font-size:15px}
+.table .v.o{color:var(--gold-3)}
+@media (max-width:720px){ .table .tr{grid-template-columns:1fr 1fr} .table .tr>:first-child{grid-column:1/-1} }
+
+/* ---------- 10 · faq ---------- */
+#faq{background:var(--lagoon-ink);color:var(--t-cream);padding:clamp(70px,9vw,120px) var(--gutter) clamp(90px,12vw,160px)}
+.faq{max-width:900px;margin:0 auto}
+.faq .head{text-align:center;margin-bottom:34px}
+.faq h2{margin-top:16px}
+details{background:var(--cream);color:var(--ink);border-radius:26px;margin-bottom:10px;transition:background .3s}
+summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:22px 26px;font:500 16.5px/1.35 var(--sans)}
+summary::-webkit-details-marker{display:none}
+summary i{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;transition:transform .35s var(--ease),background .3s}
+summary i::before{content:"";width:9px;height:9px;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:translateY(-2px) rotate(45deg)}
+details[open] summary i{transform:rotate(180deg);background:var(--gold-2);border-color:transparent}
+details .a{padding:0 26px 24px;max-width:680px;color:#454c54;font-size:15px}
+
+/* ---------- 11 · quote: the next morning ---------- */
+#quote{min-height:124svh;display:grid;grid-template-columns:1fr minmax(320px,470px);gap:40px;align-items:center;padding:clamp(110px,14vh,150px) var(--gutter) clamp(60px,10vh,100px)}
+.q-copy{align-self:end;max-width:460px;padding:24px;border-radius:26px;margin-bottom:4vh}
+.q-copy h2{font-size:clamp(36px,4vw,58px);margin:18px 0 16px}
+.q-copy p{color:#15242e;font:500 11px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;margin:0}
+.form{border-radius:26px;padding:24px}
+.form h3{font:400 26px/1.1 var(--serif);margin:0 0 4px}
+.form .sub{color:#15242e;font-size:13.5px;margin:0 0 18px}
+.fgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 16px}
+#quote>*,#energy>*,.map-wrap>*{min-width:0}
+.field input,.field select{width:100%;min-width:0}
+.field{display:grid;gap:8px}
+.field.full{grid-column:1/-1}
+.field label,.field .lbl{font:500 10.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#15242e}
+.field input,.field select{border:0;border-bottom:1px solid rgba(20,23,27,.22);background:transparent;padding:6px 0 10px;font-size:16px;outline:none;border-radius:0;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--lagoon-2)}
+.field input::placeholder{color:#56626a}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pills label{cursor:pointer}
+.pills input{position:absolute;opacity:0;pointer-events:none}
+.pills span{display:inline-block;padding:10px 14px;border-radius:999px;border:1px solid rgba(20,23,27,.18);font:500 13.5px/1 var(--sans);text-transform:none;letter-spacing:0;color:var(--ink);background:rgba(255,255,255,.3);transition:background .2s,color .2s,border-color .2s}
+.pills input:checked+span{background:var(--lagoon);color:var(--cream);border-color:var(--lagoon)}
+.pills input:focus-visible+span{outline:2px solid var(--lagoon-3);outline-offset:2px}
+.progress{display:flex;align-items:center;gap:12px;margin:22px 0 16px;font:500 10.5px var(--mono);color:#15242e;letter-spacing:.1em}
+.progress .track{flex:1;height:2px;background:rgba(20,23,27,.12);border-radius:2px;overflow:hidden}
+.progress .fill{height:100%;width:50%;background:var(--lagoon-2);transition:width .5s var(--ease)}
+.form .actions{display:flex;gap:10px}
+.form .actions .btn{flex:1;justify-content:center}
+.form .actions .btn.ghost{flex:0 0 auto;padding:14px 16px}
+.step2,.done{display:none}
+.form[data-step="2"] .step1{display:none}.form[data-step="2"] .step2{display:block}
+.form[data-step="3"] .step1,.form[data-step="3"] .step2,.form[data-step="3"] .progress,.form[data-step="3"] .actions{display:none}
+.form[data-step="3"] .done{display:block}
+.done .ok{width:48px;height:48px;border-radius:50%;background:var(--gold-2);display:grid;place-items:center;margin-bottom:16px}
+.err{color:#9e2a1e;font-size:12.5px;min-height:0}
+@media (max-width:900px){ #quote{grid-template-columns:1fr;min-height:auto} .q-copy{margin-top:22vh} }
+
+/* ---------- footer: one Kerala day on a loop — sunrise, noon, sunset, and a house that stays lit ---------- */
+footer{background:#0A2522;color:var(--t-cream);overflow:hidden}
+.dayloop{display:block;width:100%;height:clamp(240px,44vh,440px)}
+.foot-in{position:relative;padding:clamp(40px,6vw,80px) var(--gutter) 28px}
+.foot{position:relative;display:grid;grid-template-columns:1fr auto 1fr;gap:30px;align-items:center}
+.foot .big{display:flex;align-items:center;gap:14px;color:#F5F1E6}
+.foot .big svg{width:62px;height:62px}
+.foot .big b{font:400 clamp(44px,5vw,72px)/1 var(--serif);letter-spacing:-.01em}
+.foot nav{display:grid;gap:10px;justify-items:center}
+.foot nav a{font:500 11.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:var(--t-cream);opacity:.8}
+.foot nav a:hover{opacity:1;color:var(--gold-2)}
+.foot .tag{justify-self:end;text-align:right;color:#F5F1E6;font:400 clamp(28px,3vw,44px)/1.05 var(--serif);letter-spacing:-.01em}
+.foot .tag em{color:var(--gold-2);font-style:normal}
+.foot .tag small{display:block;font:500 12.5px/1.6 var(--sans);letter-spacing:0;margin-top:14px;color:var(--t-muted)}
+.legal{position:relative;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-top:clamp(44px,7vw,80px);padding-top:18px;border-top:1px solid var(--t-line);font:500 11px/1.4 var(--mono);letter-spacing:.06em;color:var(--t-muted)}
+@media (max-width:860px){ .foot{grid-template-columns:1fr} .foot nav{justify-items:start} .foot .tag{justify-self:start;text-align:left} }
+</style>
+</head>
+<body>
+<canvas id="world" aria-hidden="true"></canvas>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs id="lg-defs"></defs>
+  <!--ICONS-->
+  <g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.4-3 7.7-7 9.5-4-1.8-7-5.1-7-9.5V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-pylon" viewBox="0 0 24 24"><path d="M12 2.5L8 21.5M12 2.5l4 19M9.2 15h5.6M9.9 11h4.2M6.5 6.5h11M8 21.5h8"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 11L12 4l8.5 7M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/></symbol>
+    <symbol id="i-batt" viewBox="0 0 24 24"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M21 10.5v3M6.5 10v4M9.5 10v4M12.5 10v4"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V11M9.3 20V6M14.6 20v-8M20 20V4"/></symbol>
+    <symbol id="i-rupee" viewBox="0 0 24 24"><path d="M7 5h10M7 9h10M10.5 5c3 0 4.5 1.8 4.5 4s-2 4-5 4H8l6.5 6.5"/></symbol>
+    <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.5 4.2a4.6 4.6 0 0 0 5.3 5.3L11.6 17.7a2.3 2.3 0 1 1-3.3-3.3z"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2.5L5 13.5h6l-1 8 8-11h-6z"/></symbol>
+    <symbol id="i-rain" viewBox="0 0 24 24"><path d="M7 15a4 4 0 0 1 .5-8 5 5 0 0 1 9.5 1.5A3.5 3.5 0 0 1 17 15z"/><path d="M8 18.5l-1 2M12 18.5l-1 2M16 18.5l-1 2"/></symbol>
+    <symbol id="i-hook" viewBox="0 0 24 24"><path d="M2.5 17c2.4-2.4 4.8-2.4 7.2 0s4.8 2.4 7.2 0 2.4-1.2 4.6-1.2"/><path d="M12 16.5V8.5a3 3 0 0 1 6 0v2"/></symbol>
+    <symbol id="i-export" viewBox="0 0 24 24"><path d="M3.5 12h11M10.5 7.5 15 12l-4.5 4.5"/><path d="M19.5 4v16"/></symbol>
+    <symbol id="i-pointer" viewBox="0 0 24 24"><path d="M6 3.5l12 7-5.2 1.3L10.5 17z"/><path d="M12.8 11.8l4.2 5"/></symbol>
+  </g>
+</svg>
+
+<div id="loader" role="status" aria-live="polite" aria-label="Loading">
+  <div class="inner">
+    <svg viewBox="0 0 320 170" aria-hidden="true">
+      <defs><radialGradient id="ld-glow"><stop offset="0" stop-color="#FFD58A" stop-opacity=".7"/><stop offset="1" stop-color="#FFD58A" stop-opacity="0"/></radialGradient></defs>
+      <path d="M40 132 A120 120 0 0 1 280 132" fill="none" stroke="rgba(20,23,27,.16)" stroke-width="1" stroke-dasharray="2 5"/>
+      <g id="ld-sun"><circle r="26" fill="url(#ld-glow)"/><circle r="9" fill="#F2B55A"/><circle r="5.5" fill="#FFE9B0"/></g>
+      <path d="M20 132H300" stroke="rgba(20,23,27,.3)" stroke-width="1"/>
+      <!-- the tharavadu: hip-and-gable roof, porch gable, six modules -->
+      <g fill="#14171B">
+        <path d="M92 132V116h136v16z" opacity=".85"/>
+        <path d="M80 118 104 96h112l24 22z"/>
+        <path d="M150 96l10-12 10 12z"/>
+        <path d="M140 124l20-16 20 16z" fill="#6a2320"/>
+      </g>
+      <g id="ld-cells" fill="rgba(20,23,27,.0)" stroke="#E7C27A" stroke-width=".8">
+        <path class="cell" d="M110 112l4-12h12l-4 12z"/><path class="cell" d="M124 112l4-12h12l-4 12z"/><path class="cell" d="M138 112l4-12h8l-2 12z"/>
+        <path class="cell" d="M170 112l-2-12h8l4 12z"/><path class="cell" d="M182 112l-4-12h12l4 12z"/><path class="cell" d="M196 112l-4-12h12l4 12z"/>
+      </g>
+      <g stroke="#1C5B53" stroke-opacity=".35" stroke-width="1" fill="none"><path d="M20 142q10-3 20 0t20 0M250 146q10-3 20 0t20 0M110 150q10-3 20 0t20 0"/></g>
+    </svg>
+    <div class="row"><div class="pct"><span id="ld-n">0</span><small>%</small></div><div class="cap" id="ld-cap">Waking the backwater</div></div>
+    <div class="bar"><i></i></div>
+  </div>
+</div>
+<script>
+// loader: real milestones from the 3D world, eased so the sun always climbs smoothly
+(function () {
+  var el = document.getElementById('loader'), n = document.getElementById('ld-n'), cap = document.getElementById('ld-cap'), sun = document.getElementById('ld-sun'),
+      cells = [].slice.call(document.querySelectorAll('#ld-cells .cell')), target = .04, shown = 0, t0 = performance.now(), done = false;
+  window.ARKA_LOAD = { set: function (p, label) { if (p > target) target = p; if (label && cap.textContent !== label) cap.textContent = label; } };
+  function tick(now) {
+    if (done) return;
+    // while we wait on the network, creep forward so the scene never looks stuck
+    var creep = Math.min(.1, (now - t0) / 12000); if (target < .1) target = Math.max(target, creep);
+    shown += (target - shown) * .08; if (target >= 1 && shown > .995) shown = 1;
+    var a = Math.PI * (1 - shown * .5), x = 160 + Math.cos(a) * 120, y = 132 - Math.sin(a) * 120;
+    sun.setAttribute('transform', 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ')');
+    n.textContent = Math.round(shown * 100); el.style.setProperty('--lp', shown.toFixed(3));
+    cells.forEach(function (c, i) { var on = shown > (i + 1) / (cells.length + 1); c.classList.toggle('on', on); c.classList.toggle('glint', on && Math.floor(now / 140) % cells.length === i); });
+    if (shown >= 1) { done = true; return; }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
+
+<header class="nav glass" id="nav">
+  <a class="brand" href="#hero" aria-label="Arka Energy home">
+    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M6 20a10 10 0 0 1 20 0" stroke="#C9963A" stroke-width="2" stroke-linecap="round"/><path d="M16 4.5v3M7.2 8.4l2 2M24.8 8.4l-2 2M2.5 15.5h3M26.5 15.5h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><g fill="currentColor"><rect x="4" y="22.5" width="7" height="3" rx=".6"/><rect x="12.5" y="22.5" width="7" height="3" rx=".6"/><rect x="21" y="22.5" width="7" height="3" rx=".6"/><rect x="4" y="26.8" width="7" height="3" rx=".6"/><rect x="12.5" y="26.8" width="7" height="3" rx=".6"/><rect x="21" y="26.8" width="7" height="3" rx=".6"/></g></svg>
+    <b>Arka</b><i>Energy</i>
+  </a>
+  <span class="clock" id="clock" title="The time of day in the scene"><i aria-hidden="true"></i><b>3:40 PM</b></span>
+  <a class="link" href="#energy">Savings</a>
+  <a class="link" href="#how">How it works</a>
+  <a class="link" href="#night">Backup</a>
+  <a class="link" href="#monsoon">Monsoon</a>
+  <a class="link" href="#stories">Stories</a>
+  <a class="link" href="#faq">FAQ</a>
+  <a class="btn cta sm" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i></span><span>Get a free<span class="lbl-long"> quote</span></span></a>
+</header>
+
+<main>
+  <!-- 1 · HERO — 3:40 PM. Scroll flies you from the backwater onto the roof. -->
+  <section id="hero" class="win" data-shot="hero" data-theme="light" aria-label="Arka Energy">
+    <div class="pin">
+      <div class="hero-card glass fade-out">
+        <span class="eyebrow">Rooftop solar · Kerala</span>
+        <h1>Your tharavadu, <em>powered</em> by the sun.</h1>
+        <div class="row">
+          <a class="btn cta" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i></span>Check your roof</a>
+          <a class="btn ghost" href="#energy">Savings <span aria-hidden="true">↓</span></a>
+        </div>
+        <ul class="mini">
+          <li><svg class="ico" aria-hidden="true"><use href="#p-currency-inr"/></svg><b>₹78,000</b><small>subsidy</small></li>
+          <li><svg class="ico" aria-hidden="true"><use href="#p-shield-check"/></svg><b>25 yrs</b><small>warranty</small></li>
+          <li><svg class="ico" aria-hidden="true"><use href="#p-plugs-connected"/></svg><b>KSEB</b><small>net-metering</small></li>
+        </ul>
+      </div>
+      <div class="note" data-note="0" data-a=".4" data-b=".66" style="--a:.4;--b:.66" aria-hidden="true"><i class="leader"></i><i class="dot"></i><div class="nbox glass night"><span>3:42 PM · South roof</span><b>Laid into the tile courses — not bolted on top.</b></div></div>
+      <div class="note l" data-note="1" data-a=".66" data-b=".88" style="--a:.66;--b:.88" aria-hidden="true"><i class="leader"></i><i class="dot"></i><div class="nbox glass night"><span>5.1 kW right now</span><b>Twelve modules facing the afternoon.</b></div></div>
+      <div class="note" data-note="2" data-a=".9" data-b="1.2" style="--a:.9;--b:1.2" aria-hidden="true"><i class="leader"></i><i class="dot"></i><div class="nbox glass night"><span>Courtyard slopes</span><b>The west slope works until sunset.</b></div></div>
+      <div class="live fade-out" aria-label="Sample live reading"><i></i>Live<b><span id="liveKw">3.84</span> kW</b><svg viewBox="0 0 44 14" aria-hidden="true"><path d="M0 13C8 12 12 5 20 3S32 2 36 6 42 11 44 12" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></div>
+      <div class="scroll-cue" aria-hidden="true">Scroll<i></i></div>
+    </div>
+  </section>
+
+  <!-- 2 · ENERGY — 5:10 PM, golden hour -->
+  <section id="energy" class="win" data-shot="energy" data-theme="light" aria-labelledby="energy-h">
+    <div class="energy-intro glass reveal">
+      <span class="eyebrow">01 — 5:10 PM · Golden hour</span>
+      <h2 id="energy-h">The sun is low. <em>The roof is still working.</em></h2>
+      <svg class="eflow" viewBox="0 0 340 178" role="img" aria-label="At 5:10 PM the roof makes 3.2 kilowatts: 1.1 runs the home, 1.6 charges the battery for tonight, 0.5 goes to KSEB">
+        <g transform="translate(44 84)"><circle r="22" fill="#E7C27A"/><circle r="15" fill="#F6DEA6"/><g stroke="#C9963A" stroke-width="2" stroke-linecap="round"><path d="M0 -29v-6M0 29v6M-29 0h-6M29 0h6M-20.5 -20.5l-4.2 -4.2M20.5 20.5l4.2 4.2M-20.5 20.5l-4.2 4.2M20.5 -20.5l4.2 -4.2"/></g></g>
+        <text class="k" x="44" y="142" text-anchor="middle">SOLAR</text><text class="v" x="44" y="164" text-anchor="middle">3.2 kW</text>
+        <path class="base" d="M78 78 C140 78 150 30 206 30" stroke-width="7"/><path class="fl" d="M78 78 C140 78 150 30 206 30" stroke-width="3.4"/>
+        <path class="base" d="M78 84 L206 84" stroke-width="9"/><path class="fl" d="M78 84 L206 84" stroke-width="4.6"/>
+        <path class="base" d="M78 90 C140 90 150 138 206 138" stroke-width="5"/><path class="fl" d="M78 90 C140 90 150 138 206 138" stroke-width="2"/>
+        <g transform="translate(222 30)"><circle r="15" fill="#0F3B37"/><svg x="-9" y="-9" width="18" height="18" viewBox="0 0 256 256" fill="#F4F1E8"><use href="#p-house"/></svg><text class="k" x="24" y="-3">HOME</text><text class="v" x="24" y="17">1.1 kW</text></g>
+        <g transform="translate(222 84)"><circle r="15" fill="#0F3B37"/><svg x="-9" y="-9" width="18" height="18" viewBox="0 0 256 256" fill="#F4F1E8"><use href="#p-battery-charging"/></svg><text class="k" x="24" y="-3">BATTERY · TONIGHT</text><text class="v t" x="24" y="17">+1.6 kW</text></g>
+        <g transform="translate(222 138)"><circle r="15" fill="#0F3B37"/><svg x="-9" y="-9" width="18" height="18" viewBox="0 0 256 256" fill="#F4F1E8"><use href="#p-plugs-connected"/></svg><text class="k" x="24" y="-3">TO KSEB</text><text class="v" x="24" y="17">+0.5 kW</text></g>
+      </svg>
+    </div>
+    <div aria-hidden="true"></div>
+    <form class="calc glass reveal" id="calc" onsubmit="return false" aria-label="Savings calculator">
+      <span class="eyebrow">Savings calculator</span>
+      <label class="q" for="billIn">Your monthly bill</label>
+      <div class="bill"><span>₹</span><input id="billIn" inputmode="numeric" autocomplete="off" value="3,500"><small>/ month</small></div>
+      <input type="range" id="billRange" min="800" max="15000" step="100" value="3500" aria-label="Monthly bill slider">
+      <div class="save-big"><span>You save</span><b id="rSave">₹3,020</b><small>a month</small></div>
+      <div class="vs" aria-label="Bill comparison">
+        <div class="r"><span>Today</span><i class="bar" id="bNow" style="width:100%"></i><b id="vNow">₹3,500</b></div>
+        <div class="r"><span>With Arka</span><i class="bar o" id="bNew" style="width:14%"></i><b id="vNew">₹480</b></div>
+      </div>
+      <ul class="mini3">
+        <li><b id="rKw">4 kW</b><span>system</span></li>
+        <li><b id="rSub">₹78,000</b><span>subsidy</span></li>
+        <li><b id="rPay">4.2 yrs</b><span>payback</span></li>
+      </ul>
+      <p class="fine">Indicative · exact numbers after a free survey</p>
+    </form>
+  </section>
+
+  <!-- 3 · HOW IT WORKS — every picture is a live render of this same house -->
+  <section id="how" class="paper3d" data-paper data-theme="light" aria-labelledby="how-h">
+    <div class="modgrid" aria-hidden="true"></div>
+    <div class="head reveal"><span class="eyebrow">02 — How it works</span><h2 id="how-h">How Arka powers your home — from the <em>roof down.</em></h2></div>
+    <div class="steps">
+      <article class="step reveal"><figure class="shot" data-obj="how-roof" data-spot="0" role="img" aria-label="Solar modules on the tiled roof in afternoon sun"><span class="tag">3:40 PM</span></figure><div class="flowline"></div><div class="n">01</div><h3><svg class="ico" aria-hidden="true"><use href="#p-solar-panel"/></svg>The roof makes power</h3><p>Sunrise to sunset, even through the monsoon.</p></article>
+      <article class="step reveal"><figure class="shot" data-obj="how-home" data-spot="0" role="img" aria-label="The veranda with its lamps lit at dusk"><span class="tag">7:05 PM</span></figure><div class="flowline"></div><div class="n">02</div><h3><svg class="ico" aria-hidden="true"><use href="#p-house"/></svg>Your home uses it first</h3><p>Fans, lights and the pump run on your sun.</p></article>
+      <article class="step reveal"><figure class="shot" data-obj="how-grid" data-spot="0" role="img" aria-label="The KSEB pole and service line at the side of the house"><span class="tag">1:15 PM</span></figure><div class="flowline"></div><div class="n">03</div><h3><svg class="ico" aria-hidden="true"><use href="#p-plugs-connected"/></svg>Extra goes to KSEB</h3><p>Surplus units come back as bill credit.</p></article>
+      <article class="step reveal"><figure class="shot" data-obj="how-night" data-spot="0" role="img" aria-label="The house lit at night during a power cut"><span class="tag">9:52 PM · grid off</span></figure><div class="flowline"></div><div class="n">04</div><h3><svg class="ico" aria-hidden="true"><use href="#p-battery-charging"/></svg>Battery keeps the lights on</h3><p>Outages switch over in milliseconds.</p></article>
+    </div>
+  </section>
+
+  <!-- 4 · PARTS — each square is a live crop of the same house, where that part is fitted -->
+  <section id="parts" class="paper3d" data-paper data-theme="light" aria-labelledby="parts-h">
+    <div class="pgrid" id="pgrid">
+      <div class="pc title"><span class="eyebrow">03 — Your system, part by part</span><h2 id="parts-h">Every part, <em>where it lives.</em></h2><p>Each square is this same house, cropped to where the part is fitted. <b class="spot-hint"><svg class="ico" aria-hidden="true"><use href="#p-cursor-click"/></svg>Hover to light it up</b></p></div>
+      <div class="pc obj"><div class="shot" data-obj="panel"></div><i class="lens" aria-hidden="true"></i><div class="cap"><i>01</i>Solar modules<span>South roof</span></div></div>
+      <div class="pc stat"><svg class="ico" aria-hidden="true"><use href="#p-currency-inr"/></svg><div><b>−85<sup>%</sup></b><span>on the KSEB bill, from the first month</span><div class="viz bars" aria-hidden="true"><i></i><i class="o"></i></div></div></div>
+      <div class="pc chart" id="yearChart">
+        <div class="ch-head"><span class="eyebrow">A year on this roof</span><b id="ycKw">4 kW system</b></div>
+        <h3>Your roof’s year, <em>month by month.</em></h3>
+        <svg class="yc" id="ycSvg" viewBox="0 0 640 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Monthly solar generation compared with home use"></svg>
+        <div class="ch-foot"><span><i class="sw1"></i>Solar made</span><span><i class="sw2"></i>Home uses</span><span class="tot" id="ycTot"></span></div>
+      </div>
+      <div class="pc obj"><div class="shot" data-obj="hook"></div><i class="lens" aria-hidden="true"></i><div class="cap"><i>02</i>Tile hook + rail<span>Under the modules</span></div></div>
+      <div class="pc stat"><svg class="ico" aria-hidden="true"><use href="#p-prohibit"/></svg><div><b>0</b><span>holes drilled in old rafters</span></div></div>
+      <div class="pc obj"><div class="shot" data-obj="inverter"></div><i class="lens" aria-hidden="true"></i><div class="cap"><i>03</i>Hybrid inverter<span>East wall</span></div></div>
+      <div class="pc obj"><div class="shot" data-obj="battery"></div><i class="lens" aria-hidden="true"></i><div class="cap"><i>04</i>Home battery<span>East veranda</span></div></div>
+      <div class="pc stat"><svg class="ico" aria-hidden="true"><use href="#p-lightning"/></svg><div><b>10<sup>ms</sup></b><span>to switch the house to battery in an outage</span></div></div>
+      <div class="pc obj"><div class="shot" data-obj="meter"></div><i class="lens" aria-hidden="true"></i><div class="cap"><i>05</i>Net meter<span>Where KSEB comes in</span></div></div>
+      <div class="pc stat"><svg class="ico" aria-hidden="true"><use href="#p-arrows-left-right"/></svg><div><b>6<sup>kWh</sup></b><span>sent to KSEB on a sunny day, as credit</span></div></div>
+      <div class="pc obj"><div class="shot" data-obj="cable"></div><i class="lens" aria-hidden="true"></i><div class="cap"><i>06</i>DC cabling<span>Along the eaves</span></div></div>
+      <div class="pc stat"><svg class="ico" aria-hidden="true"><use href="#p-cloud-rain"/></svg><div><b>25<sup>yrs</sup></b><span>rated for salt air and the monsoon</span></div></div>
+    </div>
+  </section>
+
+  <!-- 5 · APP — 6:25 PM, the phone on the veranda at sunset -->
+  <section id="app" class="win" data-shot="app" data-theme="light" aria-labelledby="app-h">
+    <div class="pin">
+      <div class="app-card glass reveal">
+        <span class="eyebrow">04 — 6:25 PM · Sunset</span>
+        <h2 id="app-h">Every unit, <em>accounted for.</em></h2>
+        <ul class="tiles">
+          <li><svg class="ico" aria-hidden="true"><use href="#p-chart-bar"/></svg><b>Live output</b></li>
+          <li><svg class="ico" aria-hidden="true"><use href="#p-currency-inr"/></svg><b>Bill saved</b></li>
+          <li><svg class="ico" aria-hidden="true"><use href="#p-battery-charging"/></svg><b>Backup left</b></li>
+          <li><svg class="ico" aria-hidden="true"><use href="#p-wrench"/></svg><b>Service, one tap</b></li>
+        </ul>
+        <p class="scroll-hint"><svg class="ico" style="width:18px;height:18px" aria-hidden="true"><use href="#p-device-mobile"/></svg>Scroll inside the phone</p>
+        <div class="stores">
+          <a class="store" href="#quote" aria-label="Download on the App Store"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg><span><small>Download on the</small>App Store</span></a>
+          <a class="store" href="#quote" aria-label="Get it on Google Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#2EA8F2" d="M4 2L13 12 4 22c-.4-.2-.7-.7-.7-1.2V3.2c0-.5.3-1 .7-1.2z"/><path fill="#34C77B" d="M4 2c.4-.2.9-.2 1.3 0L15.9 9 13 12z"/><path fill="#FFC730" d="M15.9 9l3.9 2.2c.8.5.8 1.2 0 1.6L15.9 15 13 12z"/><path fill="#F2544B" d="M13 12l2.9 3L5.3 22c-.4.2-.9.2-1.3 0z"/></svg><span><small>GET IT ON</small>Google Play</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · NIGHT — 9:40 PM. Why the evening matters: the grid fails, the tharavadu stays lit. -->
+  <section id="night" class="win" data-shot="night" data-theme="dark" aria-labelledby="night-h">
+    <div class="pin">
+      <div class="night-card glass night">
+        <div class="stage">
+          <div class="a">
+            <span class="eyebrow lt">05 — 9:40 PM · After dark</span>
+            <h2 id="night-h">Night falls on the <em>backwater.</em></h2>
+            <p class="one">Running on this afternoon’s sun</p>
+          </div>
+          <div class="b" aria-live="polite">
+            <span class="eyebrow lt">9:52 PM · Power cut</span>
+            <h2>The street went dark. <em>The tharavadu didn’t.</em></h2>
+          </div>
+        </div>
+        <div class="status" aria-label="System status">
+          <span class="st grid"><i></i><svg class="ico" aria-hidden="true"><use href="#p-plugs-connected"/></svg>Grid <b class="on">on</b><b class="off">off</b></span>
+          <div class="gauge"><span class="batt" aria-hidden="true"><i></i></span><b>82%</b><small>≈ 9 h left</small></div>
+        </div>
+      </div>
+      <div class="scroll-cue" aria-hidden="true">Keep scrolling<i></i></div>
+    </div>
+  </section>
+
+  <!-- 6b · MONSOON — it rains for months in Kerala; the roof keeps working -->
+  <section id="monsoon" class="win" data-shot="rain" data-theme="dark" aria-labelledby="rain-h">
+    <div class="pin">
+      <div class="rain-card glass night">
+        <span class="eyebrow lt">06 — July · Monsoon</span>
+        <h2 id="rain-h">Grey skies. <em>Still making power.</em></h2>
+        <div class="rv"><svg class="ico" aria-hidden="true"><use href="#p-sun"/></svg>Sunny day<i style="--w:100%"></i><b>21 kWh</b></div>
+        <div class="rv wet"><svg class="ico" aria-hidden="true"><use href="#p-cloud-rain"/></svg>Monsoon day<i style="--w:45%"></i><b>9 kWh</b></div>
+        <ul class="rain-chips">
+          <li><svg class="ico" aria-hidden="true"><use href="#p-drop"/></svg>Rain rinses the modules</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#p-battery-charging"/></svg>Battery still tops up</li>
+          <li><svg class="ico" aria-hidden="true"><use href="#p-shield-check"/></svg>Sealed for 4 months of rain</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · MAP -->
+  <section id="map" class="dark" data-theme="dark" aria-labelledby="map-h">
+    <div class="modgrid" aria-hidden="true"></div>
+    <div class="map-wrap">
+      <div class="reveal">
+        <span class="eyebrow">07 — Across Kerala</span>
+        <h2 id="map-h">Every roof makes Kerala <em>stronger.</em></h2>
+        <p class="lede">Homes that make power by day — and keep it for the evening.</p>
+        <div class="stats">
+          <div><b data-count="1368">0</b><span>Homes</span></div>
+          <div><b data-count="14">0</b><span>Districts</span></div>
+          <div><b data-count="6.8" data-dec="1">0</b><span>MW installed</span></div>
+        </div>
+        <a class="btn cta gold" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i></span>Check your district</a>
+      </div>
+      <div class="kerala reveal" id="kerala"><div class="tip" id="tip"></div></div>
+    </div>
+  </section>
+
+  <!-- 8 · STORIES (placeholder testimonials — replace with real homeowners before launch) -->
+  <section id="stories" class="dark" data-theme="dark" aria-labelledby="st-h">
+    <div class="head reveal">
+      <div><span class="eyebrow">08 — Homeowners</span><h2 id="st-h">Real homes. <em>Real savings.</em></h2></div>
+    </div>
+    <div class="stories">
+      <figure class="story reveal"><img data-img="p-1" alt="Portrait of Lakshmi Menon on the veranda of her tharavadu" loading="lazy"><figcaption><blockquote>“Ninety years old, and not a tile out of place.”</blockquote><div class="who">Lakshmi Menon<span>Thrissur · Tharavadu, 1934</span></div><div class="chips"><span class="chip">5 kW + battery</span><span class="chip o">saves ₹4,100/mo</span></div></figcaption></figure>
+      <figure class="story reveal"><img data-img="p-2" alt="Portrait of Varghese Kurian seated on a wooden veranda bench" loading="lazy"><figcaption><blockquote>“₹4,800 down to ₹620. The fans don’t stop when the power does.”</blockquote><div class="who">Varghese Kurian<span>Kottayam · Retired teacher</span></div><div class="chips"><span class="chip">6 kW + battery</span><span class="chip o">saves ₹4,180/mo</span></div></figcaption></figure>
+      <figure class="story reveal"><img data-img="p-3" alt="Portrait of Anand and Divya in front of their Kerala home" loading="lazy"><figcaption><blockquote>“The kids call the app ‘what the roof made today’.”</blockquote><div class="who">Anand &amp; Divya<span>Kozhikode · New build, 2023</span></div><div class="chips"><span class="chip">4 kW</span><span class="chip o">saves ₹2,900/mo</span></div></figcaption></figure>
+    </div>
+  </section>
+
+  <!-- 9 · COMPARE -->
+  <section id="compare" class="dark" data-theme="dark" aria-labelledby="cmp-h">
+    <div class="cmp">
+      <div class="head reveal"><span class="eyebrow">09 — Ways to pay</span><h2 id="cmp-h">Pay upfront, or <em>pay monthly?</em></h2></div>
+      <div class="table reveal" role="table" aria-label="Payment options compared">
+        <div class="tr" role="row"><span role="columnheader"></span><span class="th" role="columnheader">Pay upfront</span><span class="th o" role="columnheader">Arka EMI</span></div>
+        <div class="tr" role="row"><span class="k" role="rowheader">Upfront</span><span class="v" role="cell">Full price</span><span class="v o" role="cell">From ₹0 down</span></div>
+        <div class="tr" role="row"><span class="k" role="rowheader">Subsidy</span><span class="v" role="cell">To your bank</span><span class="v o" role="cell">To your bank</span></div>
+        <div class="tr" role="row"><span class="k" role="rowheader">Monthly</span><span class="v" role="cell">A much smaller bill</span><span class="v o" role="cell">EMI below today’s bill</span></div>
+        <div class="tr" role="row"><span class="k" role="rowheader">Maintenance</span><span class="v" role="cell">Free, 5 years</span><span class="v o" role="cell">Free, 5 years</span></div>
+        <div class="tr" role="row"><span class="k" role="rowheader">Ownership</span><span class="v" role="cell">Day one</span><span class="v o" role="cell">Day one</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 · FAQ -->
+  <section id="faq" class="dark" data-theme="dark" aria-labelledby="faq-h">
+    <div class="faq">
+      <div class="head reveal"><span class="eyebrow">10 — Questions</span><h2 id="faq-h">Got questions? <em>Find answers.</em></h2></div>
+      <details class="reveal" open><summary>How does the PM Surya Ghar subsidy work?<i aria-hidden="true"></i></summary><div class="a">Homes can claim up to ₹78,000 for systems up to 3 kW. Arka files the application and follows it until the money reaches your bank.</div></details>
+      <details class="reveal"><summary>What is net metering with KSEB?<i aria-hidden="true"></i></summary><div class="a">A two-way meter counts what your roof sends to the grid and what you draw. You pay only the difference — we handle the KSEB paperwork.</div></details>
+      <details class="reveal"><summary>Will the battery really run the house in a power cut?<i aria-hidden="true"></i></summary><div class="a">Yes. The inverter switches to the battery in milliseconds, and a typical Arka battery carries lights, fans, the fridge and the pump through the evening.</div></details>
+      <details class="reveal"><summary>Does solar work during the monsoon?<i aria-hidden="true"></i></summary><div class="a">Yes, at lower output. The bright months from December to May more than make up for June to August.</div></details>
+      <details class="reveal"><summary>Will panels damage my old tiled roof?<i aria-hidden="true"></i></summary><div class="a">No. Hooks sit between the Mangalore tiles and nothing is drilled into old rafters. Heritage roofs get a structural check first.</div></details>
+      <details class="reveal"><summary>How long does installation take?<i aria-hidden="true"></i></summary><div class="a">Two to three days on the roof, after a free survey and a design you approve.</div></details>
+    </div>
+  </section>
+
+  <!-- 11 · QUOTE — 6:05 AM, the next morning -->
+  <section id="quote" class="win" data-shot="dawn" data-theme="light" aria-labelledby="q-h">
+    <div class="q-copy glass reveal">
+      <span class="eyebrow">11 — 6:05 AM · The next morning</span>
+      <h2 id="q-h">Heritage outside. <em>Power within.</em></h2>
+      <p>Free survey · exact savings · no obligation</p>
+    </div>
+    <form class="form glass reveal" id="leadForm" data-step="1" novalidate aria-label="Request a free site survey">
+      <h3>See if your home qualifies</h3>
+      <p class="sub">Takes a minute.</p>
+      <div class="step1">
+        <div class="fgrid">
+          <div class="field full"><label for="fName">Full name</label><input id="fName" name="name" autocomplete="name" placeholder="Lakshmi Menon" required></div>
+          <div class="field"><label for="fPhone">Phone</label><input id="fPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+91 98470 00000" required></div>
+          <div class="field"><label for="fPin">PIN code</label><input id="fPin" name="pin" inputmode="numeric" autocomplete="postal-code" placeholder="680001" maxlength="6" required></div>
+          <div class="field full"><label for="fDist">District</label><select id="fDist" name="district" required><option value="">Choose your district</option></select></div>
+        </div>
+      </div>
+      <div class="step2">
+        <div class="fgrid">
+          <div class="field full"><label for="fBill">Monthly electricity bill (₹)</label><input id="fBill" name="bill" inputmode="numeric" placeholder="3,500"></div>
+          <div class="field full"><span class="lbl" id="roofL">Roof type</span><div class="pills" role="radiogroup" aria-labelledby="roofL"><label><input type="radio" name="roof" value="tiled" checked><span>Tiled</span></label><label><input type="radio" name="roof" value="concrete"><span>Concrete</span></label><label><input type="radio" name="roof" value="sheet"><span>Metal sheet</span></label></div></div>
+          <div class="field full"><span class="lbl" id="bkL">Battery backup</span><div class="pills" role="radiogroup" aria-labelledby="bkL"><label><input type="radio" name="backup" value="yes" checked><span>Yes, for outages</span></label><label><input type="radio" name="backup" value="no"><span>Not now</span></label></div></div>
+          <div class="field full"><span class="lbl" id="timeL">Best time to call</span><div class="pills" role="radiogroup" aria-labelledby="timeL"><label><input type="radio" name="time" value="morning" checked><span>Morning</span></label><label><input type="radio" name="time" value="afternoon"><span>Afternoon</span></label><label><input type="radio" name="time" value="evening"><span>Evening</span></label></div></div>
+        </div>
+      </div>
+      <p class="err" id="fErr" role="alert"></p>
+      <div class="progress"><span id="pLbl">1 / 2</span><div class="track"><div class="fill" id="pFill"></div></div></div>
+      <div class="actions"><button type="button" class="btn ghost" id="fBack" hidden>Back</button><button type="submit" class="btn cta" id="fNext"><span class="scene" aria-hidden="true"><i class="sun"></i></span><span class="lbl">Next</span></button></div>
+      <div class="done" aria-live="polite"><div class="ok"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 11.5l4 4 8-9" stroke="#0C1B1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Thank you — we’ll call you soon.</h3><p class="sub" style="margin-top:8px">An Arka engineer will call within one working day to book your free site survey.</p></div>
+    </form>
+  </section>
+</main>
+
+<footer data-theme="dark">
+  <canvas class="dayloop" id="dayloop" aria-hidden="true"></canvas>
+  <div class="foot-in">
+    <div class="foot">
+      <div class="big"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M6 20a10 10 0 0 1 20 0" stroke="#E7C27A" stroke-width="2" stroke-linecap="round"/><path d="M16 4.5v3M7.2 8.4l2 2M24.8 8.4l-2 2M2.5 15.5h3M26.5 15.5h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><g fill="currentColor"><rect x="4" y="22.5" width="7" height="3" rx=".6"/><rect x="12.5" y="22.5" width="7" height="3" rx=".6"/><rect x="21" y="22.5" width="7" height="3" rx=".6"/><rect x="4" y="26.8" width="7" height="3" rx=".6"/><rect x="12.5" y="26.8" width="7" height="3" rx=".6"/><rect x="21" y="26.8" width="7" height="3" rx=".6"/></g></svg><b>Arka</b></div>
+      <nav aria-label="Footer"><a href="#energy">[ Savings ]</a><a href="#how">[ How it works ]</a><a href="#night">[ Backup ]</a><a href="#stories">[ Stories ]</a><a href="#faq">[ FAQ ]</a><a href="#quote">[ Contact ]</a></nav>
+      <div class="tag">Sun by day.<br><em>Light by night.</em><small>+91 484 000 0000 · WhatsApp us<br>MG Road, Kochi, Kerala</small></div>
+    </div>
+    <div class="legal"><span>© 2026 Arka Energy Pvt. Ltd.</span><span>Privacy · Terms · Licences</span><span>Made in Kerala, under the sun.</span></div>
+  </div>
+</footer>
+
+<script type="module">
+/*WORLD*/
+</script>
+<script>
+/*UI*/
+</script>
+<script id="img-data" type="application/json">/*IMG*/</script>
+</body>
+</html>
