@@ -1905,7 +1905,7 @@ function drawAppFull(t) {
   // your roof, panel by panel
   card(48, 1806, w - 96, 470); g.fillStyle = INK; g.font = F(500, 26, sans); g.fillText('Your roof, panel by panel', 82, 1860); label('16 MODULES · ALL HEALTHY', 82, 1896, '#2f8f5b');
   for (let r = 0; r < 2; r++) for (let c = 0; c < 8; c++) { const x = 82 + c * 70, y = 1930 + r * 150, k = .7 + .3 * Math.abs(Math.sin(r * 3 + c * 1.3)); g.fillStyle = `rgb(${Math.round(20 + 20 * k)},${Math.round(40 + 40 * k)},${Math.round(70 + 60 * k)})`; roundRect(g, x, y, 60, 130, 6); g.fill(); g.strokeStyle = 'rgba(255,255,255,.25)'; g.lineWidth = 1; for (let q = 1; q < 6; q++) { g.beginPath(); g.moveTo(x, y + q * 21.6); g.lineTo(x + 60, y + q * 21.6); g.stroke(); } g.fillStyle = '#E9C27A'; g.font = F(500, 18, mono); g.fillText((300 + Math.round(k * 240)) + 'W', x + 4, y + 124); }
-  g.fillStyle = MUT; g.font = F(400, 23, sans); g.fillText('West slope peaks at 3:10 pm — sunset side of the tharavadu.', 82, 2246);
+  g.fillStyle = MUT; g.font = F(400, 23, sans); g.fillText('West slope peaks at 3:10 pm, on the sunset side of the tharavadu.', 82, 2246);
   // impact
   card(48, 2306, (w - 120) / 2, 250); label('THIS YEAR', 78, 2356); g.fillStyle = INK; g.font = F(400, 70, serif); g.fillText('3.1 t', 76, 2446); g.fillStyle = MUT; g.font = F(400, 23, sans); g.fillText('CO₂ kept out of the air', 78, 2490); g.fillText('≈ 142 trees planted', 78, 2524);
   card(bx, 2306, (w - 120) / 2, 250, true); label('NEXT SERVICE', bx + 30, 2356, '#E9C27A'); g.fillStyle = '#F2F2EE'; g.font = F(400, 60, serif); g.fillText('14 Oct', bx + 28, 2442); g.fillStyle = 'rgba(242,242,238,.7)'; g.font = F(400, 23, sans); g.fillText('Panel rinse · free', bx + 30, 2486); g.fillText('Tap to reschedule', bx + 30, 2520);
@@ -1913,7 +1913,7 @@ function drawAppFull(t) {
   card(48, 2586, w - 96, 360); g.fillStyle = INK; g.font = F(500, 26, sans); g.fillText('Your KSEB bill', 82, 2640);
   [['Before Arka', 1, '#C4C9CD', '₹3,500'], ['Last month', .16, ACC, '₹560'], ['This month', .12, INK, '₹420']].forEach(([l, k, c, v], i) => { const y = 2692 + i * 78; g.fillStyle = MUT; g.font = F(400, 22, sans); g.fillText(l, 82, y + 22); g.fillStyle = c; roundRect(g, 260, y, 300 * k + 8, 28, 6); g.fill(); g.fillStyle = INK; g.font = F(500, 24, mono); g.fillText(v, 580, y + 23); });
   // tip + footer
-  card(48, 2976, w - 96, 220); label('TONIGHT', 82, 3026, ACC); g.fillStyle = INK; g.font = F(400, 34, serif); g.fillText('Outage forecast after 9 pm — your', 82, 3080); g.fillText('battery will carry the house.', 82, 3122);
+  card(48, 2976, w - 96, 220); label('TONIGHT', 82, 3026, ACC); g.fillStyle = INK; g.font = F(400, 34, serif); g.fillText('Outage forecast after 9 pm. Your', 82, 3080); g.fillText('battery will carry the house.', 82, 3122);
   g.fillStyle = MUT; g.font = F(500, 20, mono); g.fillText('ARKA ENERGY · KOCHI', 82, 3270); g.fillText('v4.2 · Synced 2 min ago', 82, 3302);
   APP.max = h - SCREEN.h + 150; APP.dirty = true;
 }
@@ -2314,8 +2314,11 @@ function pathPoint(A, B, p, out) {
 const cam = { pos: HERO_KEYS[0].pos.clone(), tgt: HERO_KEYS[0].tgt.clone(), fov: 27, tod: .04 };
 const want = { pos: new V(), tgt: new V() };
 const VIEW = new URLSearchParams(location.search).get('view');
+// ?view=cam&p=x,y,z&t=x,y,z&f=fov&tod=0.1 frames any shot (used to render the link-preview image)
+if (VIEW === 'cam') { const q = new URLSearchParams(location.search), v = k => new V(...(q.get(k) || '0,0,0').split(',').map(Number));
+  SHOTS.cam = { pos: v('p'), tgt: v('t'), fov: +(q.get('f') || 34), tod: +(q.get('tod') || .08), mob: 0, sun: q.get('sun') ? v('sun').normalize() : null }; }
 if (VIEW && SHOTS[VIEW]) document.documentElement.classList.add('view-only');
-const W0 = () => ({ hero: 0, energy: 0, app: 0, night: 0, dawn: 0, rain: 0, lamp: 0, man: 0, lady: 0, boat: 0 });
+const W0 = () => ({ hero: 0, energy: 0, app: 0, night: 0, dawn: 0, rain: 0, lamp: 0, man: 0, lady: 0, boat: 0, cam: 0 });
 function choreograph() {
   const portrait = camera.aspect < .85;
   if (VIEW && (SHOTS[VIEW] || VIEW === 'hero')) {
@@ -2405,6 +2408,7 @@ function frame() {
   const E = todAt(cam.tod);
   const dayW = clamp(S.w.hero + S.w.energy * .6) * (1 - smooth(.45, .75, cam.tod)) * (reduceMotion ? 0 : 1);
   const sunDir = E.sun.clone().applyAxisAngle(Y_AXIS, -mouse.sx * .75 * dayW); sunDir.y += -mouse.sy * .26 * dayW; sunDir.normalize();
+  if (VIEW === 'cam' && SHOTS.cam.sun) sunDir.copy(SHOTS.cam.sun);
   const nk = applyLight(E, sunDir, cam.tgt, cam.tod, t);
   const wet = S.w.rain; applyRain(wet, t);
   grade.uniforms.uWarm.value.copy(E.grade);

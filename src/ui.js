@@ -359,7 +359,7 @@
       if (f.dataset.step === '1') {
         const name = $('#fName').value.trim(), phone = $('#fPhone').value.replace(/[^\d]/g, ''), pin = $('#fPin').value.trim();
         if (!name) return err.textContent = 'Please tell us your name.', $('#fName').focus();
-        if (phone.length < 10) return err.textContent = 'Please enter a 10-digit phone number.', $('#fPhone').focus();
+        if (phone.length < 10) return err.textContent = 'Phone numbers need 10 digits.', $('#fPhone').focus();
         if (!/^6[7-9]\d{4}$/.test(pin)) return err.textContent = 'Kerala PIN codes start with 67, 68 or 69.', $('#fPin').focus();
         if (!sel.value) return err.textContent = 'Please choose your district.', sel.focus();
         go(2); $('#fBill').focus();
