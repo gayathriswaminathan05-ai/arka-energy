@@ -17,6 +17,7 @@ import { Water } from 'three/addons/objects/Water.js';
 
 const V = THREE.Vector3;
 const LOAD = (p, l) => { try { window.ARKA_LOAD && window.ARKA_LOAD.set(p, l); } catch (e) { } };
+const breathe = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));   // hand the main thread back for a frame
 LOAD(.14, 'Laying the tiles');
 // toNonIndexed() on an already non-indexed geometry just returns it (avoids noisy warnings)
 { const tni = THREE.BufferGeometry.prototype.toNonIndexed; THREE.BufferGeometry.prototype.toNonIndexed = function () { return this.index ? tni.call(this) : this; }; }
@@ -47,8 +48,8 @@ try {
   throw e;
 }
 const DPR = Math.min(window.devicePixelRatio || 1, isSmall ? 1.5 : 1.75);
-const perf = { acc: 0, n: 0, ratio: DPR, good: 0 };
-renderer.setPixelRatio(DPR);
+const perf = { acc: 0, n: 0, ratio: Math.min(DPR, 1.25), good: 0, hold: 0 };
+renderer.setPixelRatio(perf.ratio);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
@@ -322,7 +323,7 @@ const T = {
 };
 
 /* ------------------------------------------------------------------ photographic textures */
-const IMG = (() => { try { return JSON.parse(document.getElementById('img-data').textContent); } catch (e) { return {}; } })();
+const IMG = window.ARKA_DATA ? window.ARKA_DATA() : (() => { try { return JSON.parse(document.getElementById('img-data').textContent); } catch (e) { return {}; } })();
 const texLoads = []; let texDone = 0;
 function normalFromImage(img, strength) {
   const w = img.width, h = img.height, c = document.createElement('canvas'); c.width = w; c.height = h;
@@ -1980,18 +1981,25 @@ function clockAt(t) { let i = 0; while (i < CLOCK.length - 2 && t > CLOCK[i + 1]
 
 LOAD(.46, 'Planting the palms');
 /* ------------------------------------------------------------------ assemble the world */
+await breathe();
 scene.add(sky);
 const hills = buildHills(); scene.add(hills);
 scene.add(buildGround());
+await breathe();
 const paddy = buildPaddy(); scene.add(paddy);
+await breathe();
 const house = buildHouse(); scene.add(house);
+await breathe();
 const backwater = buildBackwater(); scene.add(backwater);
+await breathe();
 camera.layers.enable(1);
 scene.add(buildCompound());
 const village = buildVillage(); scene.add(village);
 const panels = new THREE.InstancedMesh(new THREE.BoxGeometry(1.95, .045, 1.0), [M.frame, M.frame, M.panel, M.frame, M.frame, M.frame], panelMatrices.length);
 panelMatrices.forEach((m, i) => panels.setMatrixAt(i, m)); panels.castShadow = true; panels.receiveShadow = true; scene.add(panels);
+await breathe();
 const vegetation = buildVegetation(); scene.add(vegetation);
+await breathe();
 LOAD(.56, 'Filling the backwater');
 const mist = buildMist(); scene.add(mist);
 const shafts = buildShafts(); scene.add(shafts);
@@ -2137,23 +2145,29 @@ const CELLS = {
   'how-night': { pos: new V(-3.4, 1.15, 19.4), tgt: new V(0, 1.9, 13.2), fov: 50, tod: 1 },
 };
 const cellEls = [...document.querySelectorAll('[data-obj]')], paperEls = [...document.querySelectorAll('[data-paper]')];
-const cells = cellEls.map(el => ({ el, key: el.dataset.obj, spot: el.dataset.spot !== '0', rt: null, hover: 0, tap: -99, sx: .5, sy: .5, exp: 1 }));
+// each crop is drawn into a canvas that sits inside its own square in the page, so it scrolls exactly with the page
+const cells = cellEls.map(el => { const cv = document.createElement('canvas'); cv.className = 'cellcv'; cv.setAttribute('aria-hidden', 'true'); el.prepend(cv);
+  return { el, cv, ctx: cv.getContext('2d'), key: el.dataset.obj, spot: el.dataset.spot !== '0', rt: null, rt8: null, buf: null, busy: false, hover: 0, tap: -99, sx: .5, sy: .5, exp: 1 }; });
 cellEls.forEach((el, i) => el.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') cells[i].tap = clock.elapsedTime; }));
 const cellCam = new THREE.PerspectiveCamera(30, 1, .05, 600); cellCam.layers.enable(1);
 const cellSpot = new THREE.SpotLight(0xfff0da, 0, 0, .3, .55, 2); cellSpot.castShadow = true;
 cellSpot.shadow.mapSize.set(1024, 1024); cellSpot.shadow.bias = -.0003; cellSpot.shadow.camera.near = .2; cellSpot.shadow.camera.far = 30;
 const blitScene = new THREE.Scene(), blitCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 const blitMat = new THREE.ShaderMaterial({
-  uniforms: { tMap: { value: null }, uTime: { value: 0 } },
+  uniforms: { tMap: { value: null }, uTime: { value: 0 }, uExp: { value: 1 } },
   depthTest: false, depthWrite: false,
-  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0., 1.); }`,
-  fragmentShader: `uniform sampler2D tMap; uniform float uTime; varying vec2 vUv;
+  // renders top-down (so the read-back rows are already in image order), with the same ACES + sRGB as the main view
+  vertexShader: `varying vec2 vUv; void main(){ vUv = vec2(uv.x, 1. - uv.y); gl_Position = vec4(position.xy, 0., 1.); }`,
+  fragmentShader: `uniform sampler2D tMap; uniform float uTime, uExp; varying vec2 vUv;
     float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+    vec3 rrt(vec3 v){ vec3 a = v * (v + .0245786) - .000090537; vec3 b = v * (.983729 * v + .4329510) + .238081; return a / b; }
+    vec3 aces(vec3 c){ const mat3 I = mat3(vec3(.59719, .07600, .02840), vec3(.35458, .90834, .13383), vec3(.04823, .01566, .83777));
+      const mat3 O = mat3(vec3(1.60475, -.10208, -.00327), vec3(-.53108, 1.10813, -.07276), vec3(-.07367, -.00605, 1.07602));
+      c *= uExp / .6; return clamp(O * rrt(I * c), 0., 1.); }
+    vec3 srgb(vec3 c){ return mix(c * 12.92, 1.055 * pow(c, vec3(1. / 2.4)) - .055, step(.0031308, c)); }
     void main(){ vec4 c = texture2D(tMap, vUv); vec2 q = vUv - .5; c.rgb *= 1. - dot(q, q) * .55;
-      gl_FragColor = vec4(c.rgb, 1.);
-      #include <tonemapping_fragment>
-      #include <colorspace_fragment>
-      gl_FragColor.rgb += (h(vUv * 800. + fract(uTime) * 40.) - .5) * .02; }`,
+      vec3 o = srgb(aces(c.rgb)) + (h(vUv * 800. + fract(uTime) * 40.) - .5) * .02;
+      gl_FragColor = vec4(o, 1.); }`,
 });
 { const q = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), blitMat); q.frustumCulled = false; blitScene.add(q); }
 const CELL_E = (() => { const E = todAt(.1); E.fog = new THREE.Color('#dfe6ea'); E.fogD = .004; E.hemi = .62; E.exp = 1.0; E.env = .6; E.win = 0; return E; })();
@@ -2168,60 +2182,58 @@ function lightFor(key) {
 }
 let cellRR = 0;
 const hidden = [];
-function renderCells(papers, t, dt) {
-  const DPRc = Math.min(renderer.getPixelRatio(), 1.6);
-  const vis = cells.map(c => { const r = c.el.getBoundingClientRect(); return r.bottom > 0 && r.top < Hh && r.width > 4 ? r : null; });
+function renderCells(t, dt) {
+  const DPRc = Math.min(window.devicePixelRatio || 1, 1.5);
+  const vis = cells.map(c => { const r = c.el.getBoundingClientRect(); return r.bottom > -40 && r.top < Hh + 40 && r.width > 4 ? r : null; });
   // hover (mouse) or a recent tap (touch) lights the part
   cells.forEach((c, i) => { const r = vis[i]; const on = c.spot && r && ((mouse.px > r.left && mouse.px < r.right && mouse.py > r.top && mouse.py < r.bottom) || t - c.tap < 4) ? 1 : 0;
     if (r && on && mouse.px > -1e3) { c.sx = lerp(c.sx, clamp((mouse.px - r.left) / r.width), 1 - Math.exp(-dt * 8)); c.sy = lerp(c.sy, clamp((mouse.py - r.top) / r.height), 1 - Math.exp(-dt * 8)); }
     c.hover = lerp(c.hover, on, 1 - Math.exp(-dt * (on ? 4 : 2.5))); });
-  const todo = new Set();
-  cells.forEach((c, i) => { if (vis[i] && (!c.rt || c.hover > .004 || c.rt.width !== Math.max(2, Math.round(vis[i].width * DPRc)))) todo.add(i); });
-  for (let k = 0, n = 0; k < cells.length && n < 2; k++) { cellRR = (cellRR + 1) % cells.length; if (vis[cellRR] && !todo.has(cellRR)) { todo.add(cellRR); n++; } }
-  if (todo.size) {
-    applyRain(0, t);
-    hidden.length = 0; for (const o of [backwater, paddy, mist, shafts, parts.petals, parts.flies, grid, village, rain.streaks, rain.rings, rain.drips, rain.sheets]) if (o.visible) { o.visible = false; hidden.push(o); }
-    scene.add(cellSpot, cellSpot.target);
-    sun.shadow.autoUpdate = false; cellSpot.shadow.autoUpdate = false;
-    renderer.setScissorTest(false);
-    let lastL = null;
-    for (const i of todo) {
-      const c = cells[i], r = vis[i], S = CELLS[c.key] || CELLS.panel, L = lightFor(c.key);
-      const w = Math.max(2, Math.round(r.width * DPRc)), h = Math.max(2, Math.round(r.height * DPRc));
-      if (!c.rt || c.rt.width !== w || c.rt.height !== h) { c.rt?.dispose(); c.rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: 4 }); }
-      applyLight(L.E, L.sun, CELL_FOCUS, L.tod, t);
-      flames.flame.visible = flames.halo.visible = flameU.uI.value > .005;
-      if (L !== lastL) { sun.shadow.needsUpdate = true; lastL = L; }
-      const hv = easeIO(clamp(c.hover));
-      cellCam.aspect = r.width / r.height; cellCam.fov = S.fov * (1 - .1 * hv); cellCam.position.copy(S.pos); cellCam.lookAt(S.tgt); cellCam.updateProjectionMatrix(); cellCam.updateMatrixWorld();
-      // spotlight: from just above the lens, aimed at whatever the cursor is over
-      const dist = S.pos.distanceTo(S.tgt);
-      tmpV.set(c.sx * 2 - 1, -(c.sy * 2 - 1), .5).unproject(cellCam).sub(cellCam.position).normalize();
-      cellCam.getWorldDirection(tmpV2); const hit = tmpV3.copy(cellCam.position).addScaledVector(tmpV, dist / Math.max(.2, tmpV.dot(tmpV2)));
-      tmpV2.set(0, 1, 0).applyQuaternion(cellCam.quaternion);
-      cellSpot.position.copy(cellCam.position).addScaledVector(tmpV2, dist * .3).lerp(hit, .18);
-      cellSpot.target.position.copy(hit); cellSpot.target.updateMatrixWorld();
-      cellSpot.angle = THREE.MathUtils.degToRad(S.fov * .36); cellSpot.intensity = 26 * dist * dist / 9 * hv; cellSpot.shadow.needsUpdate = hv > .01;
-      sun.intensity *= lerp(1, .38, hv); hemi.intensity *= lerp(1, .5, hv); scene.environmentIntensity *= lerp(1, .5, hv);
-      c.exp = renderer.toneMappingExposure;
-      renderer.setRenderTarget(c.rt); renderer.clear(); renderer.render(scene, cellCam);
+  const todo = new Set(), sizeOf = r => [Math.max(2, Math.round(r.width * DPRc)), Math.max(2, Math.round(r.height * DPRc))];
+  cells.forEach((c, i) => { if (vis[i] && !c.busy && (!c.rt || c.hover > .004 || c.rt.width !== sizeOf(vis[i])[0])) todo.add(i); });
+  for (let k = 0, n = 0; k < cells.length && n < 2; k++) { cellRR = (cellRR + 1) % cells.length; if (vis[cellRR] && !cells[cellRR].busy && !todo.has(cellRR)) { todo.add(cellRR); n++; } }
+  if (!todo.size) return;
+  applyRain(0, t);
+  hidden.length = 0; for (const o of [backwater, paddy, mist, shafts, parts.petals, parts.flies, grid, village, rain.streaks, rain.rings, rain.drips, rain.sheets]) if (o.visible) { o.visible = false; hidden.push(o); }
+  scene.add(cellSpot, cellSpot.target);
+  sun.shadow.autoUpdate = false; cellSpot.shadow.autoUpdate = false;
+  renderer.setScissorTest(false);
+  let lastL = null;
+  for (const i of todo) {
+    const c = cells[i], r = vis[i], S = CELLS[c.key] || CELLS.panel, L = lightFor(c.key), [w, h] = sizeOf(r);
+    if (!c.rt || c.rt.width !== w || c.rt.height !== h) {
+      c.rt?.dispose(); c.rt8?.dispose();
+      c.rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: 4 });
+      c.rt8 = new THREE.WebGLRenderTarget(w, h, { depthBuffer: false });
+      c.buf = new Uint8Array(w * h * 4); c.img = new ImageData(new Uint8ClampedArray(c.buf.buffer), w, h); c.cv.width = w; c.cv.height = h;
     }
-    renderer.setRenderTarget(null);
-    scene.remove(cellSpot, cellSpot.target);
-    for (const o of hidden) o.visible = true;
-    sun.shadow.autoUpdate = true;
+    applyLight(L.E, L.sun, CELL_FOCUS, L.tod, t);
+    flames.flame.visible = flames.halo.visible = flameU.uI.value > .005;
+    if (L !== lastL) { sun.shadow.needsUpdate = true; lastL = L; }
+    const hv = easeIO(clamp(c.hover));
+    cellCam.aspect = r.width / r.height; cellCam.fov = S.fov * (1 - .1 * hv); cellCam.position.copy(S.pos); cellCam.lookAt(S.tgt); cellCam.updateProjectionMatrix(); cellCam.updateMatrixWorld();
+    // spotlight: from just above the lens, aimed at whatever the cursor is over
+    const dist = S.pos.distanceTo(S.tgt);
+    tmpV.set(c.sx * 2 - 1, -(c.sy * 2 - 1), .5).unproject(cellCam).sub(cellCam.position).normalize();
+    cellCam.getWorldDirection(tmpV2); const hit = tmpV3.copy(cellCam.position).addScaledVector(tmpV, dist / Math.max(.2, tmpV.dot(tmpV2)));
+    tmpV2.set(0, 1, 0).applyQuaternion(cellCam.quaternion);
+    cellSpot.position.copy(cellCam.position).addScaledVector(tmpV2, dist * .3).lerp(hit, .18);
+    cellSpot.target.position.copy(hit); cellSpot.target.updateMatrixWorld();
+    cellSpot.angle = THREE.MathUtils.degToRad(S.fov * .36); cellSpot.intensity = 26 * dist * dist / 9 * hv; cellSpot.shadow.needsUpdate = hv > .01;
+    sun.intensity *= lerp(1, .38, hv); hemi.intensity *= lerp(1, .5, hv); scene.environmentIntensity *= lerp(1, .5, hv);
+    blitMat.uniforms.uExp.value = renderer.toneMappingExposure; blitMat.uniforms.uTime.value = t;
+    renderer.setRenderTarget(c.rt); renderer.clear(); renderer.render(scene, cellCam);
+    blitMat.uniforms.tMap.value = c.rt.texture; renderer.setRenderTarget(c.rt8); renderer.render(blitScene, blitCam);
+    // read the picture back without stalling the GPU, then paint it into the square's own canvas
+    c.busy = true;
+    const done = () => { c.busy = false; c.ctx.putImageData(c.img, 0, 0); };
+    if (renderer.readRenderTargetPixelsAsync) renderer.readRenderTargetPixelsAsync(c.rt8, 0, 0, w, h, c.buf).then(done, () => { c.busy = false; });
+    else { renderer.readRenderTargetPixels(c.rt8, 0, 0, w, h, c.buf); done(); }
   }
-  // paper behind the sections, then each crop into its frame
-  renderer.setScissorTest(true); renderer.setViewport(0, 0, W, Hh); renderer.setClearColor(0xf2f2ee, 1);
-  for (const pr of papers) { const y0 = Math.max(0, pr.top), y1 = Math.min(Hh, pr.bottom); if (y1 <= y0) continue; renderer.setScissor(0, Hh - y1, W, y1 - y0); renderer.clear(true, true, false); }
-  cells.forEach((c, i) => {
-    const r = vis[i]; if (!r || !c.rt) return;
-    const t0 = Math.max(0, r.top), b0 = Math.min(Hh, r.bottom);
-    renderer.setScissor(r.left, Hh - b0, r.width, b0 - t0); renderer.setViewport(r.left, Hh - r.bottom, r.width, r.height);
-    blitMat.uniforms.tMap.value = c.rt.texture; blitMat.uniforms.uTime.value = t; renderer.toneMappingExposure = c.exp;
-    renderer.render(blitScene, blitCam);
-  });
-  renderer.setScissorTest(false); renderer.setViewport(0, 0, W, Hh);
+  renderer.setRenderTarget(null);
+  scene.remove(cellSpot, cellSpot.target);
+  for (const o of hidden) o.visible = true;
+  sun.shadow.autoUpdate = true;
 }
 
 /* ------------------------------------------------------------------ post */
@@ -2351,16 +2363,17 @@ window.ARKA = window.ARKA || {};
 
 const clock = new THREE.Clock();
 function adaptResolution(dt) {
+  if (perf.hold > 0) { perf.hold -= dt; return; }          // settle for a moment after the page opens
   perf.acc += dt; perf.n++;
-  if (perf.acc < 1) return;
+  if (perf.acc < 1.2) return;
   const avg = perf.acc / perf.n; perf.acc = 0; perf.n = 0;
   let r = perf.ratio;
   if (avg > 1 / 48 && r > .85) r = Math.max(.85, r - .2);
-  else if (avg < 1 / 58) { if (++perf.good > 3 && r < DPR) { r = Math.min(DPR, r + .25); perf.good = 0; } }
+  else if (avg < 1 / 57) { if (++perf.good > 4 && r < DPR) { r = Math.min(DPR, r + .25); perf.good = 0; } }
   else perf.good = 0;
   if (r !== perf.ratio) { perf.ratio = r; renderer.setPixelRatio(r); composer.setPixelRatio(r); resize(); }
 }
-let first = true, lastPhone = 0, visible = true, lastClock = '';
+let first = true, lastPhone = 0, visible = true, lastClock = '', revealed = false, warmFrames = 0;
 const tmpV = new V(), tmpV2 = new V(), tmpV3 = new V(), Y_AXIS = new V(0, 1, 0), lookT = new V(), rightV = new V();
 function isOnScreen(el) { const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; }
 const root = document.documentElement, clockEl = document.getElementById('clock');
@@ -2372,8 +2385,8 @@ function frame() {
   requestAnimationFrame(frame);
   const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
   visible = winEls.some(isOnScreen) || first || !!VIEW;
-  const papers = VIEW ? [] : paperEls.map(el => el.getBoundingClientRect()).filter(r => r.bottom > 0 && r.top < innerHeight);
-  if (!visible) { if (papers.length) renderCells(papers, t, dt); return; }
+  const cellsNear = !VIEW && paperEls.some(el => { const r = el.getBoundingClientRect(); return r.bottom > -200 && r.top < innerHeight + 200; });
+  if (!visible) { if (cellsNear) renderCells(t, dt); return; }
   const S = choreograph(); adaptResolution(dt);
   const k = first ? 1 : 1 - Math.exp(-dt * 3.4);
   cam.pos.lerp(want.pos, k); cam.tgt.lerp(want.tgt, k);
@@ -2455,16 +2468,28 @@ function frame() {
     if (label !== lastClock) { lastClock = label; clockEl.querySelector('b').textContent = label; clockEl.classList.toggle('moon', S.w.rain <= .5 && (hh >= 19 || hh < 6)); clockEl.classList.toggle('rain', S.w.rain > .5); }
   }
   composer.render(dt);
-  if (papers.length) renderCells(papers, t, dt);
-  if (first) { first = false; LOAD(1, 'Welcome home'); setTimeout(() => { root.classList.add('world-ready'); window.dispatchEvent(new Event('arka:ready')); }, 650); }
+  if (cellsNear) renderCells(t, dt);
+  if (first) first = false;
+  if (!revealed && ++warmFrames >= 4) { revealed = true; perf.hold = 2.5; LOAD(1, 'Welcome home'); setTimeout(() => { root.classList.add('world-ready'); window.dispatchEvent(new Event('arka:ready')); }, 700); }
 }
 document.fonts?.ready.then(() => { drawAppFull(0); drawPhone(phone.userData.cv); phone.userData.tex.needsUpdate = true; });
 addEventListener('load', measure);
 new ResizeObserver(measure).observe(document.body);
 // start once the photographic textures are decoded (so no roof ever flashes black)
 Promise.race([Promise.all(texLoads.concat([loadPeople()])), new Promise(r => setTimeout(r, 3500))]).then(async () => {
-  LOAD(.86, 'Lighting the lamps');
-  try { camera.position.copy(cam.pos); camera.lookAt(cam.tgt); camera.updateMatrixWorld();
-    setRig(true); await renderer.compileAsync(scene, camera); setRig(false); await renderer.compileAsync(scene, camera); } catch (e) { }
+  LOAD(.78, 'Lighting the lamps');
+  try {
+    choreograph(); cam.pos.copy(want.pos); cam.tgt.copy(want.tgt);
+    camera.position.copy(cam.pos); camera.lookAt(cam.tgt); camera.updateMatrixWorld();
+    setRig(true); await renderer.compileAsync(scene, camera); await breathe();
+    setRig(false); await renderer.compileAsync(scene, camera); await breathe();
+    LOAD(.85, 'Tuning the sky');
+    const E0 = todAt(cam.tod); applyLight(E0, E0.sun, cam.tgt, cam.tod, 0); refreshEnv(cam.tod); await breathe();
+    // upload every texture to the GPU a few at a time, instead of all inside the first frame
+    const texs = new Set(); scene.traverse(o => { const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+      for (const m of ms) for (const k of ['map', 'normalMap', 'emissiveMap', 'alphaMap', 'bumpMap', 'roughnessMap']) if (m[k] && m[k].isTexture) texs.add(m[k]); });
+    let n = 0; for (const tx of texs) { renderer.initTexture(tx); if (++n % 4 === 0) { LOAD(.85 + .08 * n / texs.size, 'Tuning the sky'); await breathe(); } }
+    LOAD(.94, 'Almost there'); await breathe();
+  } catch (e) { }
   requestAnimationFrame(frame);
 });

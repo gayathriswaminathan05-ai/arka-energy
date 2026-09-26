@@ -144,22 +144,31 @@ h2 em,h1 em,h3 em{font-style:normal;font-weight:400;color:var(--lagoon-2)}
 .reveal.in{opacity:1;transform:none}
 @media (prefers-reduced-motion: reduce){ .reveal{opacity:1;transform:none;transition:none} }
 
-/* ---------- loader: sunrise over the tharavadu — the sun climbs to noon as the world loads ---------- */
-#loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--cream) var(--noise);transition:opacity 1.1s var(--ease),visibility 1.1s;--lp:0}
+/* ---------- loader: sunrise over the tharavadu — the sun climbs to noon as the world loads.
+   Every moving part is a transform/opacity animation, so it stays smooth even while the page is busy. ---------- */
+#loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--cream) var(--noise);transition:opacity 1.1s var(--ease),visibility 1.1s}
 .world-ready #loader,.no-webgl #loader{opacity:0;visibility:hidden}
 #loader .inner{display:grid;justify-items:center;gap:18px;color:var(--ink);width:min(320px,80vw)}
-#loader svg{width:100%;height:auto;overflow:visible}
-#loader .sky{transition:opacity .3s}
-#loader .cell{transition:fill .5s var(--ease)}
-#loader .cell.on{fill:#1C5B53}
-#loader .cell.on.glint{fill:#2E7A6F}
+.ld-scene{position:relative;width:100%;aspect-ratio:320/170}
+.ld-scene>svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.ld-arm{position:absolute;left:50%;top:77.6%;width:0;height:0;transform:rotate(0deg);transition:transform 1.1s cubic-bezier(.3,.7,.3,1);will-change:transform}
+.ld-sun{position:absolute;top:0;left:-120px;width:0;height:0}
+@supports (width:1cqw){ .ld-scene{container-type:inline-size} .ld-sun{left:-37.5cqw} }
+.ld-sun i{position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle,#FFE9B0 0 36%,#F2B55A 62%,#E7A443 100%);box-shadow:0 0 18px 8px rgba(255,200,120,.45)}
+.ld-sun i::after{content:"";position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(255,213,138,.55),rgba(255,213,138,0) 70%);animation:ldpulse 1.6s ease-in-out infinite}
+@keyframes ldpulse{0%,100%{transform:scale(.8);opacity:.7}50%{transform:scale(1.15);opacity:1}}
+.ld-cells i{position:absolute;top:0;height:0}
 #loader .row{display:flex;justify-content:space-between;align-items:baseline;width:100%;gap:16px}
 #loader .pct{font:400 34px/1 var(--serif);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
 #loader .pct small{font:500 11px var(--mono);letter-spacing:.1em;color:var(--muted);margin-left:3px}
-#loader .cap{font:500 10.5px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:right;min-height:14px;transition:opacity .3s}
+#loader .cap{font:500 10.5px/1.3 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:right;min-height:14px}
 #loader .bar{position:relative;width:100%;height:2px;border-radius:2px;background:rgba(20,23,27,.1);overflow:hidden}
-#loader .bar i{position:absolute;inset:0;width:calc(var(--lp) * 100%);background:linear-gradient(90deg,var(--gold),var(--lagoon-2));transition:width .35s var(--ease)}
-@media (prefers-reduced-motion: reduce){ #loader *{transition:none!important} }
+#loader .bar i{position:absolute;inset:0;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--gold),var(--lagoon-2));transition:transform 1.1s cubic-bezier(.3,.7,.3,1);will-change:transform}
+#loader .bar b{position:absolute;top:0;bottom:0;left:0;width:30%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent);animation:ldshine 1.4s linear infinite}
+@keyframes ldshine{from{transform:translateX(-100%)}to{transform:translateX(340%)}}
+#loader .cell{transition:fill .5s}
+#loader .cell.on{fill:#1C5B53}
+@media (prefers-reduced-motion: reduce){ #loader *{transition:none!important;animation:none!important} }
 
 /* ---------- floating nav (liquid glass) ---------- */
 .nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:2px;padding:6px 6px 6px 14px;border-radius:999px;color:var(--ink);max-width:calc(100vw - 24px);transition:color .6s}
@@ -285,9 +294,11 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 
 /* ---------- 3 · how it works — each picture is a live render of this same house ---------- */
 .view-only main,.view-only footer,.view-only .nav,.view-only #loader{display:none}
-.paper3d{background:transparent;isolation:isolate}
+.paper3d{background-color:var(--cream);isolation:isolate}
 .paper3d::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;background-image:var(--noise);background-size:220px 220px;opacity:.14;mix-blend-mode:multiply}
-.no-webgl .paper3d{background:var(--cream)}
+.cellcv{position:absolute;inset:0;width:100%;height:100%;display:block;border-radius:inherit}
+.pc.obj .shot{position:relative;background:#e4e6e2}
+.step .shot{background:#e4e6e2}
 #how{color:var(--ink);padding:calc(var(--cell) * .34) var(--gutter) calc(var(--cell) * .4)}
 #how .modgrid{position:absolute;inset:0;pointer-events:none;z-index:0}
 #how>*{position:relative;z-index:3}
@@ -563,47 +574,39 @@ footer{background:#0A2522;color:var(--t-cream);overflow:hidden}
 
 <div id="loader" role="status" aria-live="polite" aria-label="Loading">
   <div class="inner">
-    <svg viewBox="0 0 320 170" aria-hidden="true">
-      <defs><radialGradient id="ld-glow"><stop offset="0" stop-color="#FFD58A" stop-opacity=".7"/><stop offset="1" stop-color="#FFD58A" stop-opacity="0"/></radialGradient></defs>
-      <path d="M40 132 A120 120 0 0 1 280 132" fill="none" stroke="rgba(20,23,27,.16)" stroke-width="1" stroke-dasharray="2 5"/>
-      <g id="ld-sun"><circle r="26" fill="url(#ld-glow)"/><circle r="9" fill="#F2B55A"/><circle r="5.5" fill="#FFE9B0"/></g>
-      <path d="M20 132H300" stroke="rgba(20,23,27,.3)" stroke-width="1"/>
-      <!-- the tharavadu: hip-and-gable roof, porch gable, six modules -->
-      <g fill="#14171B">
-        <path d="M92 132V116h136v16z" opacity=".85"/>
-        <path d="M80 118 104 96h112l24 22z"/>
-        <path d="M150 96l10-12 10 12z"/>
-        <path d="M140 124l20-16 20 16z" fill="#6a2320"/>
-      </g>
-      <g id="ld-cells" fill="rgba(20,23,27,.0)" stroke="#E7C27A" stroke-width=".8">
-        <path class="cell" d="M110 112l4-12h12l-4 12z"/><path class="cell" d="M124 112l4-12h12l-4 12z"/><path class="cell" d="M138 112l4-12h8l-2 12z"/>
-        <path class="cell" d="M170 112l-2-12h8l4 12z"/><path class="cell" d="M182 112l-4-12h12l4 12z"/><path class="cell" d="M196 112l-4-12h12l4 12z"/>
-      </g>
-      <g stroke="#1C5B53" stroke-opacity=".35" stroke-width="1" fill="none"><path d="M20 142q10-3 20 0t20 0M250 146q10-3 20 0t20 0M110 150q10-3 20 0t20 0"/></g>
-    </svg>
+    <div class="ld-scene">
+      <svg viewBox="0 0 320 170" aria-hidden="true">
+        <path d="M40 132 A120 120 0 0 1 280 132" fill="none" stroke="rgba(20,23,27,.16)" stroke-width="1" stroke-dasharray="2 5"/>
+      </svg>
+      <div class="ld-arm" id="ld-arm" aria-hidden="true"><div class="ld-sun"><i></i></div></div>
+      <svg viewBox="0 0 320 170" aria-hidden="true">
+        <path d="M20 132H300" stroke="rgba(20,23,27,.3)" stroke-width="1"/>
+        <g fill="#14171B"><path d="M92 132V116h136v16z" opacity=".85"/><path d="M80 118 104 96h112l24 22z"/><path d="M150 96l10-12 10 12z"/><path d="M140 124l20-16 20 16z" fill="#6a2320"/></g>
+        <g id="ld-cells" fill="rgba(20,23,27,0)" stroke="#E7C27A" stroke-width=".8">
+          <path class="cell" d="M110 112l4-12h12l-4 12z"/><path class="cell" d="M124 112l4-12h12l-4 12z"/><path class="cell" d="M138 112l4-12h8l-2 12z"/>
+          <path class="cell" d="M170 112l-2-12h8l4 12z"/><path class="cell" d="M182 112l-4-12h12l4 12z"/><path class="cell" d="M196 112l-4-12h12l4 12z"/>
+        </g>
+        <g stroke="#1C5B53" stroke-opacity=".35" stroke-width="1" fill="none"><path d="M20 142q10-3 20 0t20 0M250 146q10-3 20 0t20 0M110 150q10-3 20 0t20 0"/></g>
+      </svg>
+    </div>
     <div class="row"><div class="pct"><span id="ld-n">0</span><small>%</small></div><div class="cap" id="ld-cap">Waking the backwater</div></div>
-    <div class="bar"><i></i></div>
+    <div class="bar"><i id="ld-bar"></i><b></b></div>
   </div>
 </div>
 <script>
-// loader: real milestones from the 3D world, eased so the sun always climbs smoothly
+// one shared parse of the embedded images/models (used by both the 3D world and the page script)
+window.ARKA_DATA = function () { if (!window.__arkaData) { try { window.__arkaData = JSON.parse(document.getElementById('img-data').textContent); } catch (e) { window.__arkaData = {}; } } return window.__arkaData; };
+// loader: the 3D world reports real milestones; the sun and bar glide there on the compositor
 (function () {
-  var el = document.getElementById('loader'), n = document.getElementById('ld-n'), cap = document.getElementById('ld-cap'), sun = document.getElementById('ld-sun'),
-      cells = [].slice.call(document.querySelectorAll('#ld-cells .cell')), target = .04, shown = 0, t0 = performance.now(), done = false;
-  window.ARKA_LOAD = { set: function (p, label) { if (p > target) target = p; if (label && cap.textContent !== label) cap.textContent = label; } };
-  function tick(now) {
-    if (done) return;
-    // while we wait on the network, creep forward so the scene never looks stuck
-    var creep = Math.min(.1, (now - t0) / 12000); if (target < .1) target = Math.max(target, creep);
-    shown += (target - shown) * .08; if (target >= 1 && shown > .995) shown = 1;
-    var a = Math.PI * (1 - shown * .5), x = 160 + Math.cos(a) * 120, y = 132 - Math.sin(a) * 120;
-    sun.setAttribute('transform', 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ')');
-    n.textContent = Math.round(shown * 100); el.style.setProperty('--lp', shown.toFixed(3));
-    cells.forEach(function (c, i) { var on = shown > (i + 1) / (cells.length + 1); c.classList.toggle('on', on); c.classList.toggle('glint', on && Math.floor(now / 140) % cells.length === i); });
-    if (shown >= 1) { done = true; return; }
-    requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
+  var n = document.getElementById('ld-n'), cap = document.getElementById('ld-cap'), arm = document.getElementById('ld-arm'), bar = document.getElementById('ld-bar'),
+      cells = [].slice.call(document.querySelectorAll('#ld-cells .cell')), p = 0, shown = 0, t0 = Date.now();
+  function paint() { arm.style.transform = 'rotate(' + (p * 90).toFixed(1) + 'deg)'; bar.style.transform = 'scaleX(' + p.toFixed(3) + ')';
+    cells.forEach(function (c, i) { c.classList.toggle('on', p > (i + 1) / (cells.length + 1)); }); }
+  window.ARKA_LOAD = { set: function (v, label) { if (v <= p) return; p = Math.min(1, v); if (label) cap.textContent = label; paint(); } };
+  // while the page itself is still downloading, creep forward so it never looks stuck
+  var creep = setInterval(function () { var c = Math.min(.12, (Date.now() - t0) / 9000); if (c > p) { p = c; paint(); } if (p >= .12) clearInterval(creep); }, 250);
+  // the counter eases toward the real value whenever the main thread is free
+  (function count() { shown += (p - shown) * .12; if (p - shown < .004) shown = p; n.textContent = Math.round(shown * 100); if (shown < 1) requestAnimationFrame(count); })();
 })();
 </script>
 

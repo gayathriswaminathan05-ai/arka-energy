@@ -372,7 +372,7 @@
 
   /* ---------- images (embedded placeholders) ---------- */
   function initImages() {
-    let data = {}; try { data = JSON.parse(document.getElementById('img-data').textContent); } catch (e) { }
+    const data = window.ARKA_DATA ? window.ARKA_DATA() : {};
     $$('img[data-img]').forEach(img => { const src = data[img.dataset.img]; if (src) img.src = src; });
   }
 
@@ -382,6 +382,12 @@
     const go = () => { const el = document.getElementById(at); if (el) { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, el.offsetTop + (+q.get('off') || 0)); } };
     go(); addEventListener('load', go);
   }
-  function boot() { initImages(); initCalc(); initNav(); initReveal(); initLive(); initExplore(); initMap(); initFaq(); initForm(); initDeepLink(); initDayLoop(); initLiquidGlass(); setTimeout(() => document.documentElement.classList.add('world-ready'), 9000); }
+  function boot() {
+    initImages(); initCalc(); initNav(); initReveal(); initLive(); initExplore(); initFaq(); initForm(); initDeepLink();
+    const later = () => { const idle = window.requestIdleCallback || (f => setTimeout(f, 60)); idle(() => { initLiquidGlass(); idle(() => { initMap(); idle(initDayLoop); }); }); };
+    let started = false; const go = () => { if (!started) { started = true; later(); } };
+    addEventListener('arka:ready', go); setTimeout(go, 12000);
+    setTimeout(() => document.documentElement.classList.add('world-ready'), 15000);
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
