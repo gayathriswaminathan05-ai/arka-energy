@@ -1475,7 +1475,7 @@ function buildPaddy() {
   const xs = [-26, -35, -44, -53, -63, -73, -84, -95, -106, -118, -130, -142, -155, -168, -180];
   const zs = []; for (let z = -176; z <= 24; z += 8) zs.push(z);
   const water = [], lush = [], bunds = [];
-  const lushMat = std({ color: 0x6f9a2c, roughness: .92 });
+  const lushMat = std({ color: 0x4f7a22, roughness: .92 });   // the canopy's own shadowy green, between the rice panels
   const waterMat = new THREE.MeshStandardMaterial({ color: 0x6a6647, roughness: .1, metalness: .35 });
   const bundMat = std({ color: 0x6e5b3c, roughness: 1 });
   const WY = -.36;
@@ -1497,27 +1497,62 @@ function buildPaddy() {
   const wm = new THREE.Mesh(mergeGeometries(water), waterMat);
   const bm = new THREE.Mesh(mergeGeometries(bunds), bundMat); bm.receiveShadow = true; bm.castShadow = true;
   G.add(lm, wm, bm);
-  // paddy clumps in rows that lead the eye to the chart
-  const clump = mergeGeometries(Array.from({ length: 7 }, (_, k) => {
-    const h = R(.55, .8), g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute([-.018, 0, 0, .018, 0, 0, -.011, h * .5, h * .05, .011, h * .5, h * .05, 0, h, h * .2], 3));
-    { const a = srgb(.3, .46, .12), b = srgb(.5, .66, .18), c = srgb(.8, .84, .38); g.setAttribute('color', new THREE.Float32BufferAttribute([a.r, a.g, a.b, a.r, a.g, a.b, b.r, b.g, b.b, b.r, b.g, b.b, c.r, c.g, c.b], 3)); }
-    g.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 0, 0, .5, .5, .5, .5, 1, 1], 2));
-    g.setIndex([0, 1, 2, 1, 3, 2, 2, 3, 4]);
-    g.rotateY(k / 7 * 6.28 + R(-.3, .3)); g.rotateZ(R(-.15, .15));
-    return g.toNonIndexed();
-  }));
-  clump.computeVertexNormals();
-  const spots = [];
-  const step = isSmall ? .62 : .45;
-  for (const [xa, xb, za, zb, isW, isChart] of plots) {
-    if (isW || isChart) continue;
-    if (xa < -65 || Math.abs((za + zb) / 2) > 34) continue;
-    for (let x = xa + .5; x < xb - .4; x += step) for (let z = za + .5; z < zb - .4; z += step * .8) spots.push([x + R(-.08, .08), z + R(-.08, .08)]);
+  // rice: small crossed panels painted with blades. The texture is mipmapped and the cut-out uses alpha-to-coverage,
+  // so at a distance the field blends into a soft, dense crop instead of breaking into sub-pixel speckle
+  const riceTex = canvasTex(256, 256, (g, w, h) => {
+    g.clearRect(0, 0, w, h); const r = mulberry32(31);
+    for (let i = 0; i < 520; i++) {
+      const x = r() * w, hh = h * (.42 + r() * .56), lean = (r() - .5) * w * .14, lw = 1.3 + r() * 2.1, t = r();
+      const c = t < .55 ? [66 + r() * 22, 116 + r() * 26, 30] : t < .88 ? [92 + r() * 22, 142 + r() * 22, 42] : [150 + r() * 20, 158, 72];
+      const gr = g.createLinearGradient(0, h, 0, h - hh); gr.addColorStop(0, `rgb(${c[0] * .72 | 0},${c[1] * .76 | 0},${c[2] * .7 | 0})`); gr.addColorStop(1, `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`);
+      g.strokeStyle = gr; g.lineWidth = lw; g.lineCap = 'round'; g.beginPath(); g.moveTo(x, h); g.quadraticCurveTo(x + lean * .35, h - hh * .55, x + lean, h - hh); g.stroke();
+    }
+  }, { repeat: false });
+  const card = mergeGeometries([0, 1, 2].map(k => { const p = new THREE.PlaneGeometry(1.15, .78); p.translate(0, .39, 0); p.rotateY(k / 3 * Math.PI); return p.toNonIndexed(); }));
+  { const nr = card.attributes.normal; for (let i = 0; i < nr.count; i++) nr.setXYZ(i, 0, 1, 0); }   // light it like a canopy, not like thin walls
+  // the crop itself: a continuous canopy over each plot, finely textured with blade tips (smooth at any distance),
+  // with a slow wind ripple running across it; blade panels only fringe the plot edges
+  const canopyTex = canvasTex(512, 512, (g, w, h) => {
+    const r = mulberry32(47); g.fillStyle = '#4f7c24'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 9000; i++) { const x = r() * w, y = r() * h, l = 3 + r() * 9, a = -Math.PI / 2 + (r() - .5) * 1.6, t = r();
+      g.strokeStyle = t < .45 ? `rgba(70,112,30,.8)` : t < .85 ? `rgba(118,160,52,.75)` : `rgba(176,184,86,.7)`; g.lineWidth = .8 + r() * 1.2;
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke(); }
+    for (let i = 0; i < 1400; i++) { g.fillStyle = `rgba(40,64,18,${.2 + r() * .3})`; g.fillRect(r() * w, r() * h, 1.5, 1.5); }
+  });
+  const canopy = [], spots = [], step = .5;
+  for (const [xa, xb, za, zb, isW] of plots) {
+    if (isW || xa < -86 || Math.abs((za + zb) / 2) > 40) continue;
+    if (NEIGH.some(([nx, nz]) => nx > xa - 5 && nx < xb + 5 && nz > za - 4 && nz < zb + 4)) continue;   // a neighbour's house stands in its own yard
+    const pg = new THREE.PlaneGeometry(xb - xa + .02, zb - za + .02).rotateX(-Math.PI / 2).toNonIndexed(); pg.translate((xa + xb) / 2, WY + .5, (za + zb) / 2);
+    const tint = hash2(xa | 0, za | 0), c = tint < .1 ? srgb(1.06, 1.03, .82) : srgb(.95 + tint * .08, .97 + tint * .05, .92);
+    const pos = pg.attributes.position, uv = pg.attributes.uv, cols = [];
+    for (let i = 0; i < pos.count; i++) { uv.setXY(i, pos.getX(i) / 2.4, pos.getZ(i) / 2.4); cols.push(c.r, c.g, c.b); }
+    pg.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3)); canopy.push(pg);
+    if (xb >= -26.5) for (let z = za + .3; z < zb - .2; z += step) spots.push([xb - .32, z + R(-.12, .12), tint, 0]);   // the edge facing the house
   }
-  const bladeMat = windify(new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }), { amp: .1, flutter: 1, hs: .8 });
-  const im = new THREE.InstancedMesh(clump, bladeMat, spots.length), m = new THREE.Matrix4();
-  spots.forEach(([x, z], i) => { const s = R(.8, 1.2); m.compose(new V(x, WY, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, R(0, 6.28), 0)), new V(s, s, s)); im.setMatrixAt(i, m); });
+  const canopyMat = std({ map: canopyTex, vertexColors: true, roughness: .92 });
+  canopyMat.onBeforeCompile = sh => {
+    sh.uniforms.uTime = windU.uTime;
+    sh.vertexShader = 'varying vec3 vCW;\n' + sh.vertexShader.replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\n  vCW = (modelMatrix * vec4(transformed, 1.)).xyz;');
+    sh.fragmentShader = `uniform float uTime; varying vec3 vCW;
+      float ph(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float pn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(ph(i), ph(i + vec2(1, 0)), f.x), mix(ph(i + vec2(0, 1)), ph(i + vec2(1, 1)), f.x), f.y); }
+    ` + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+      vec2 q = vCW.xz;
+      float patches = pn(q * .18) * .6 + pn(q * .55 + 7.) * .4;                    // clumps combed lighter and darker by the wind
+      float wave = (sin(q.x * .32 + q.y * .2 - uTime * 1.2) * .5 + .5) * (sin(q.x * .09 - uTime * .35 + q.y * .06) * .5 + .5);
+      float rf = q.y * 3.2, fw = fwidth(rf);                                           // planting rows, faded out before they get too fine to draw
+      float rows = smoothstep(.5 - fw, .5 + fw, abs(fract(rf) - .5) * 2.) * (1. - smoothstep(.25, .8, fw));
+      diffuseColor.rgb *= mix(.6, 1.08, patches) * (.86 + wave * .26) * (1. - rows * .16) * .9;
+      diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.18, 1.1, .7), smoothstep(.62, .9, pn(q * .07 + 3.)) * .35);   // a few ripening, yellower patches`);
+  };
+  const cm = new THREE.Mesh(mergeGeometries(canopy), canopyMat); cm.receiveShadow = true; cm.layers.set(1); G.add(cm);
+  const riceMat = windify(std({ map: riceTex, alphaTest: .32, alphaToCoverage: true, side: THREE.DoubleSide, roughness: .86 }), { amp: .06, flutter: 0, hs: .8 });
+  const riceDepth = windDepth(riceTex, .32, { amp: .06, flutter: 0, hs: .8 });
+  const im = new THREE.InstancedMesh(card, riceMat, spots.length), m = new THREE.Matrix4(), col = new THREE.Color();
+  spots.forEach(([x, z, n, up], i) => { const s = R(.85, 1.2); m.compose(new V(x, WY + (up ? .22 : 0), z), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, R(0, 6.28), 0)), new V(s, s * R(.85, 1.1), s)); im.setMatrixAt(i, m);
+    col.setRGB(.9 + n * .18, .95 + n * .1, .85 + n * .1); im.setColorAt(i, col); });
+  im.customDepthMaterial = riceDepth; im.receiveShadow = true;
   im.frustumCulled = false; im.layers.set(1); G.add(im);
   // backwaters on the western horizon
   const bw = new THREE.Mesh(new THREE.PlaneGeometry(60, 900), new THREE.MeshStandardMaterial({ color: 0x3c5566, roughness: .05, metalness: .2 }));
