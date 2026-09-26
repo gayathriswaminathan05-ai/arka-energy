@@ -3,7 +3,7 @@
 A single-page landing site told as one day in a Kerala tharavadu on the backwaters:
 3:40 PM on the roof → golden hour savings → sunset on the veranda → a 9:52 PM power cut the house rides out on its battery → the monsoon → the next morning.
 
-Everything is one self-contained `index.html`, with a real-time Three.js world (house, backwater, palms, people, rain), live crops of the same house in the parts grid and the UI around it. `og.jpg` and `apple-touch-icon.png` sit beside it for link previews and home screens.
+Everything is one self-contained `index.html`, with a real-time Three.js world (house, backwater, palms, people, rain), live crops of the same house in the parts grid and the UI around it. `preview.jpg` and `apple-touch-icon.png` sit beside it for link previews and home screens.
 
 ## Run locally
 
