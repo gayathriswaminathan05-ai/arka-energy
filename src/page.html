@@ -208,6 +208,42 @@ h2 em,h1 em,h3 em{font-style:normal;font-weight:400;color:var(--lagoon-2)}
 @media (max-width:1100px){ .nav a.link{display:none} .brand i{display:none} }
 @media (max-width:420px){ .clock{padding:7px 8px;margin:0 4px} .nav .btn{padding-right:14px} .nav .btn .lbl-long{display:none} }
 
+/* ---------- phones and small tablets: no bar, just the mark and a menu button ---------- */
+.burger,.mnav{display:none}
+@media (max-width:900px), (max-height:520px) and (orientation:landscape){
+  .nav{left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));transform:none;max-width:none;justify-content:space-between;padding:0;gap:0;pointer-events:none;
+    background:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .nav::before{display:none}
+  .nav>*{pointer-events:auto}
+  .nav .clock,.nav a.link,.nav>.btn{display:none}
+  .glass-chip{background:rgba(252,253,253,.24);-webkit-backdrop-filter:blur(14px) saturate(1.7) brightness(1.1);backdrop-filter:blur(14px) saturate(1.7) brightness(1.1);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.34),inset 1.5px 2px 0 -1px rgba(255,255,255,.9),0 10px 26px -14px rgba(10,24,30,.5)}
+  .nav.dark .glass-chip,.menu-open .glass-chip{background:rgba(14,22,26,.3);box-shadow:inset 0 0 0 1px rgba(255,236,210,.16),inset 1.5px 2px 0 -1px rgba(255,236,210,.45),0 10px 26px -14px rgba(0,0,0,.6)}
+  .brand{margin:0;padding:10px 15px 10px 12px;border-radius:999px}
+  .burger{display:grid;place-content:center;gap:6px;width:46px;height:46px;border:0;border-radius:50%;padding:0;cursor:pointer;color:inherit}
+  .burger i{display:block;width:18px;height:1.6px;border-radius:2px;background:currentColor;transition:transform .45s var(--ease)}
+  .menu-open .burger i:first-child{transform:translateY(3.8px) rotate(45deg)}
+  .menu-open .burger i:last-child{transform:translateY(-3.8px) rotate(-45deg)}
+  .menu-open .nav{color:var(--t-cream)}
+  .mnav{position:fixed;inset:0;z-index:55;display:flex;flex-direction:column;justify-content:space-between;gap:28px;overflow-y:auto;
+    padding:calc(92px + env(safe-area-inset-top)) 24px calc(26px + env(safe-area-inset-bottom));color:var(--t-cream);
+    background:rgba(9,27,25,.66);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);
+    opacity:0;visibility:hidden;transition:opacity .45s var(--ease),visibility 0s linear .45s}
+  .menu-open .mnav{opacity:1;visibility:visible;transition:opacity .45s var(--ease),visibility 0s}
+  .mnav ol{list-style:none;margin:0;padding:0}
+  .mnav ol a{display:flex;align-items:baseline;gap:14px;padding:13px 0;border-bottom:1px solid rgba(238,240,234,.12);font:400 clamp(28px,7.6vw,38px)/1.05 var(--serif);color:var(--t-cream);text-decoration:none;
+    opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease),transform .6s var(--ease)}
+  .mnav ol a small{font:500 11px/1 var(--mono);letter-spacing:.12em;color:var(--gold-2);min-width:22px}
+  .menu-open .mnav ol a{opacity:1;transform:none}
+  .menu-open .mnav li:nth-child(2) a{transition-delay:.04s} .menu-open .mnav li:nth-child(3) a{transition-delay:.08s} .menu-open .mnav li:nth-child(4) a{transition-delay:.12s}
+  .menu-open .mnav li:nth-child(5) a{transition-delay:.16s} .menu-open .mnav li:nth-child(6) a{transition-delay:.2s}
+  .mnav .foot-m{display:grid;gap:14px}
+  .mnav .foot-m .btn.cta{justify-content:center;width:100%;padding-left:78px}
+  .mnav .contact{margin:0;font:500 10.5px/1.4 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--t-muted);text-align:center}
+  html.menu-open,html.menu-open body{overflow:hidden}
+}
+@media (max-height:520px) and (orientation:landscape){ .mnav ol{display:grid;grid-template-columns:1fr 1fr;column-gap:28px} .mnav ol a{font-size:24px;padding:9px 0} }
+
 /* ---------- 1 · hero (pinned: scrolling flies you onto the roof) ---------- */
 #hero{height:340svh}
 #hero .pin{position:sticky;top:0;height:100svh;min-height:600px;overflow:hidden}
@@ -629,7 +665,7 @@ window.ARKA_DATA = function () { if (!window.__arkaData) { try { window.__arkaDa
 </script>
 
 <header class="nav glass" id="nav">
-  <a class="brand" href="#hero" aria-label="Arka Energy home">
+  <a class="brand glass-chip" href="#hero" aria-label="Arka Energy home">
     <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M6 20a10 10 0 0 1 20 0" stroke="#C9963A" stroke-width="2" stroke-linecap="round"/><path d="M16 4.5v3M7.2 8.4l2 2M24.8 8.4l-2 2M2.5 15.5h3M26.5 15.5h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><g fill="currentColor"><rect x="4" y="22.5" width="7" height="3" rx=".6"/><rect x="12.5" y="22.5" width="7" height="3" rx=".6"/><rect x="21" y="22.5" width="7" height="3" rx=".6"/><rect x="4" y="26.8" width="7" height="3" rx=".6"/><rect x="12.5" y="26.8" width="7" height="3" rx=".6"/><rect x="21" y="26.8" width="7" height="3" rx=".6"/></g></svg>
     <b>Arka</b><i>Energy</i>
   </a>
@@ -641,7 +677,22 @@ window.ARKA_DATA = function () { if (!window.__arkaData) { try { window.__arkaDa
   <a class="link" href="#stories">Stories</a>
   <a class="link" href="#faq">FAQ</a>
   <a class="btn cta sm" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i></span><span>Get a free<span class="lbl-long"> quote</span></span></a>
+  <button class="burger glass-chip" id="burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mnav"><i></i><i></i></button>
 </header>
+<div class="mnav" id="mnav" aria-hidden="true">
+  <nav aria-label="Menu"><ol>
+    <li><a href="#energy"><small>01</small>Savings</a></li>
+    <li><a href="#how"><small>02</small>How it works</a></li>
+    <li><a href="#night"><small>03</small>Backup</a></li>
+    <li><a href="#monsoon"><small>04</small>Monsoon</a></li>
+    <li><a href="#stories"><small>05</small>Stories</a></li>
+    <li><a href="#faq"><small>06</small>FAQ</a></li>
+  </ol></nav>
+  <div class="foot-m">
+    <a class="btn cta" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i></span>Get a free quote</a>
+    <p class="contact">+91 484 000 0000 · WhatsApp us</p>
+  </div>
+</div>
 
 <main>
   <!-- 1 · HERO — 3:40 PM. Scroll flies you from the backwater onto the roof. -->

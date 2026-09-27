@@ -106,6 +106,28 @@
     check();
   }
 
+  /* ---------- mobile menu: the button top right opens a full-screen glass menu ---------- */
+  function initMenu() {
+    const b = $('#burger'), m = $('#mnav'); if (!b || !m) return;
+    const mq = matchMedia('(max-width:900px), (max-height:520px) and (orientation:landscape)');
+    const set = open => {
+      root.classList.toggle('menu-open', open); b.setAttribute('aria-expanded', String(open)); b.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      m.setAttribute('aria-hidden', String(!open)); m.inert = !open;
+      if (open) m.querySelector('a').focus({ preventScroll: true });
+    };
+    m.inert = true;
+    b.addEventListener('click', () => set(!root.classList.contains('menu-open')));
+    // close first, then scroll on the next frame, once the page is scrollable again
+    m.addEventListener('click', e => {
+      const a = e.target.closest('a'); if (!a) return;
+      const id = a.getAttribute('href'), target = id && id.startsWith('#') ? document.querySelector(id) : null;
+      set(false);
+      if (target) { e.preventDefault(); requestAnimationFrame(() => { target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); history.replaceState(null, '', id); }); }
+    });
+    addEventListener('keydown', e => { if (e.key === 'Escape' && root.classList.contains('menu-open')) { set(false); b.focus(); } });
+    mq.addEventListener('change', e => { if (!e.matches) set(false); });
+  }
+
   /* ---------- reveal + counters ---------- */
   function initReveal() {
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
@@ -383,7 +405,7 @@
     go(); addEventListener('load', go);
   }
   function boot() {
-    initImages(); initCalc(); initNav(); initReveal(); initLive(); initExplore(); initFaq(); initForm(); initDeepLink();
+    initImages(); initCalc(); initNav(); initMenu(); initReveal(); initLive(); initExplore(); initFaq(); initForm(); initDeepLink();
     const later = () => { const idle = window.requestIdleCallback || (f => setTimeout(f, 60)); idle(() => { initLiquidGlass(); idle(() => { initMap(); idle(initDayLoop); }); }); };
     let started = false; const go = () => { if (!started) { started = true; later(); } };
     addEventListener('arka:ready', go); setTimeout(go, 12000);
