@@ -14,14 +14,14 @@
 <meta property="og:title" content="Arka Energy · Rooftop solar for Kerala homes">
 <meta property="og:description" content="Solar laid into your tiled roof, a battery that keeps the lights on through power cuts, and an app that counts every unit.">
 <meta property="og:url" content="https://gayathriswaminathan05-ai.github.io/arka-energy/">
-<meta property="og:image" content="https://gayathriswaminathan05-ai.github.io/arka-energy/preview.jpg">
+<meta property="og:image" content="https://gayathriswaminathan05-ai.github.io/arka-energy/preview2.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Solar panels on a Kerala tile roof, with the headline: Your tharavadu, powered by the sun.">
+<meta property="og:image:alt" content="Solar panels on a Kerala tile roof, with the headline: Solar power for your Kerala home.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Arka Energy · Rooftop solar for Kerala homes">
 <meta name="twitter:description" content="Solar laid into your tiled roof, a battery that keeps the lights on through power cuts, and an app that counts every unit.">
-<meta name="twitter:image" content="https://gayathriswaminathan05-ai.github.io/arka-energy/preview.jpg">
+<meta name="twitter:image" content="https://gayathriswaminathan05-ai.github.io/arka-energy/preview2.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tenor+Sans&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -248,9 +248,11 @@ h2 em,h1 em,h3 em{font-style:normal;font-weight:400;color:var(--lagoon-2)}
 #hero{height:340svh}
 #hero .pin{position:sticky;top:0;height:100svh;min-height:600px;overflow:hidden}
 .fade-out{transition:opacity .6s var(--ease),transform .75s var(--ease),filter .6s var(--ease),visibility 0s linear 0s}
-.hero-card{position:absolute;left:var(--gutter);top:clamp(92px,13vh,116px);width:min(344px,calc(100vw - 32px));padding:18px 18px 16px;border-radius:24px}
+.hero-card{position:absolute;left:var(--gutter);top:clamp(92px,13vh,116px);width:min(368px,calc(100vw - 32px));padding:18px 18px 16px;border-radius:24px}
+.hero-card .btn.cta{padding-right:64px}
+.hero-card .btn.ghost{padding-left:2px;padding-right:2px}
 .hero-card h1{font-size:clamp(25px,2.1vw,31px);line-height:1.06;margin:11px 0 14px}
-.hero-card .row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.hero-card .row{display:flex;flex-wrap:nowrap;gap:8px 14px;align-items:center}
 .mini{list-style:none;margin:14px 0 0;padding:12px 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid rgba(20,23,27,.12)}
 .mini li{display:grid;grid-template-columns:22px 1fr;column-gap:8px;align-items:center}
 .mini b{font:400 16px/1 var(--serif);letter-spacing:-.01em}
@@ -272,7 +274,7 @@ h2 em,h1 em,h3 em{font-style:normal;font-weight:400;color:var(--lagoon-2)}
 .live svg{width:44px;height:14px;opacity:.8}
 .hero-scrolled .live,.exploring .live{opacity:0;visibility:hidden;transition:opacity .5s,visibility 0s linear .5s}
 @media (max-width:620px){ .live{display:none} }
-@media (max-width:400px){ .hero-card{top:72px;padding:16px 16px 14px} .hero-card h1{font-size:25px;margin:9px 0 12px} .mini{display:none} }
+@media (max-width:400px){ .hero-card .btn.cta{padding:13px 46px 13px 16px;font-size:13.5px} .hero-card .row{gap:6px 10px} .hero-card{top:72px;padding:16px 16px 14px} .hero-card h1{font-size:25px;margin:9px 0 12px} .mini{display:none} }
 @media (max-height:520px) and (orientation:landscape){ .hero-card{top:70px;width:min(390px,48vw);padding:14px 16px 13px} .hero-card h1{font-size:23px;margin:8px 0 11px} .mini{display:none} .live{display:none} }
 /* a quiet "Scroll" nudge whenever the visitor pauses (desktop and mobile) */
 .nudge{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));z-index:50;display:flex;align-items:center;gap:9px;padding:10px 15px 10px 17px;border:0;border-radius:999px;cursor:pointer;
@@ -707,11 +709,11 @@ window.ARKA_DATA = function () { if (!window.__arkaData) { try { window.__arkaDa
   <section id="hero" class="win" data-shot="hero" data-theme="light" aria-label="Arka Energy">
     <div class="pin">
       <div class="hero-card glass fade-out">
-        <span class="eyebrow">Rooftop solar · Kerala</span>
-        <h1>Your tharavadu, <em>powered</em> by the sun.</h1>
+        <span class="eyebrow">Arka Energy · Rooftop solar</span>
+        <h1><em>Solar power</em> for your Kerala home.</h1>
         <div class="row">
-          <a class="btn cta" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i></span>Check your roof</a>
-          <a class="btn ghost" href="#energy">Savings <span aria-hidden="true">↓</span></a>
+          <a class="btn cta" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i></span>Get a free quote</a>
+          <a class="btn ghost" href="#energy">See savings <span aria-hidden="true">↓</span></a>
         </div>
         <ul class="mini">
           <li><svg class="ico" aria-hidden="true"><use href="#p-currency-inr"/></svg><b>₹78,000</b><small>subsidy</small></li>
