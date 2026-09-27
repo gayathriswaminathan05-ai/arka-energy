@@ -128,6 +128,27 @@
     mq.addEventListener('change', e => { if (!e.matches) set(false); });
   }
 
+  /* ---------- "Scroll" nudge: appears when the visitor pauses, hides the moment they move ---------- */
+  function initNudge() {
+    const el = $('#nudge'); if (!el) return;
+    const secs = $$('[data-theme]');
+    let timer = 0, ready = false;
+    const atEnd = () => scrollY + innerHeight >= document.documentElement.scrollHeight - 140;
+    const busy = () => root.classList.contains('menu-open') || /^(INPUT|SELECT|TEXTAREA)$/.test((document.activeElement || {}).tagName || '');
+    const darkBehind = () => { const y = innerHeight - 36; for (const s of secs) { const r = s.getBoundingClientRect(); if (r.top <= y && r.bottom > y) return s.dataset.theme === 'dark'; } return true; };
+    const show = () => { if (!ready || atEnd() || busy()) return; el.classList.toggle('dark', darkBehind()); el.classList.add('on'); };
+    const hide = () => el.classList.remove('on');
+    const arm = (ms = 2200) => { clearTimeout(timer); timer = setTimeout(show, ms); };
+    const moved = () => { hide(); arm(); };
+    addEventListener('scroll', moved, { passive: true });
+    addEventListener('wheel', moved, { passive: true });           // includes scrolling inside the phone, which doesn't move the page
+    addEventListener('touchmove', moved, { passive: true });
+    addEventListener('keydown', e => { if (/^(ArrowDown|ArrowUp|PageDown|PageUp|Space| |End|Home)$/.test(e.key)) moved(); });
+    const start = () => { if (!ready) { ready = true; arm(900); } };
+    addEventListener('arka:ready', start); setTimeout(start, 15000);
+    el.addEventListener('click', () => { hide(); scrollBy({ top: innerHeight * .85, behavior: reduce ? 'auto' : 'smooth' }); });
+  }
+
   /* ---------- reveal + counters ---------- */
   function initReveal() {
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
@@ -405,7 +426,7 @@
     go(); addEventListener('load', go);
   }
   function boot() {
-    initImages(); initCalc(); initNav(); initMenu(); initReveal(); initLive(); initExplore(); initFaq(); initForm(); initDeepLink();
+    initImages(); initCalc(); initNav(); initMenu(); initNudge(); initReveal(); initLive(); initExplore(); initFaq(); initForm(); initDeepLink();
     const later = () => { const idle = window.requestIdleCallback || (f => setTimeout(f, 60)); idle(() => { initLiquidGlass(); idle(() => { initMap(); idle(initDayLoop); }); }); };
     let started = false; const go = () => { if (!started) { started = true; later(); } };
     addEventListener('arka:ready', go); setTimeout(go, 12000);

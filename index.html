@@ -261,11 +261,8 @@ h2 em,h1 em,h3 em{font-style:normal;font-weight:400;color:var(--lagoon-2)}
 .scroll-note i::after{content:"";position:absolute;left:50%;top:4px;width:2px;height:4px;margin-left:-1px;border-radius:2px;background:currentColor;animation:wheel 1.6s var(--ease) infinite}
 @keyframes wheel{0%{transform:translateY(0);opacity:1}100%{transform:translateY(7px);opacity:0}}
 .hero-scrolled .hero-card,.exploring .hero-card{opacity:0;transform:translateY(-14px) scale(.985);filter:blur(6px);pointer-events:none;visibility:hidden;transition:opacity .6s var(--ease),transform .75s var(--ease),filter .6s var(--ease),visibility 0s linear .6s}
-.scroll-cue{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);display:grid;justify-items:center;gap:8px;font:500 10px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:rgba(248,246,238,.85);text-shadow:0 1px 8px rgba(0,0,0,.4);transition:opacity .5s}
-.scroll-cue i{width:1px;height:30px;background:linear-gradient(rgba(248,246,238,.85),transparent);animation:cue 2.2s var(--ease) infinite;transform-origin:top}
 @keyframes cue{0%{transform:scaleY(0)}60%{transform:scaleY(1)}100%{transform:scaleY(1);opacity:0}}
 @keyframes pulse{70%{box-shadow:0 0 0 8px rgba(58,160,110,0)}100%{box-shadow:0 0 0 0 rgba(58,160,110,0)}}
-.hero-scrolled .scroll-cue{opacity:0;visibility:hidden;transition:opacity .5s,visibility 0s linear .5s}
 /* tertiary: a whisper-quiet live reading, bottom right */
 .live{position:absolute;right:var(--gutter);bottom:18px;display:flex;align-items:center;gap:10px;padding:7px 12px 7px 10px;border-radius:999px;
   background:rgba(255,255,255,.06);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);
@@ -277,6 +274,18 @@ h2 em,h1 em,h3 em{font-style:normal;font-weight:400;color:var(--lagoon-2)}
 @media (max-width:620px){ .live{display:none} }
 @media (max-width:400px){ .hero-card{top:72px;padding:16px 16px 14px} .hero-card h1{font-size:25px;margin:9px 0 12px} .mini{display:none} }
 @media (max-height:520px) and (orientation:landscape){ .hero-card{top:70px;width:min(390px,48vw);padding:14px 16px 13px} .hero-card h1{font-size:23px;margin:8px 0 11px} .mini{display:none} .live{display:none} }
+/* a quiet "Scroll" nudge whenever the visitor pauses (desktop and mobile) */
+.nudge{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));z-index:50;display:flex;align-items:center;gap:9px;padding:10px 15px 10px 17px;border:0;border-radius:999px;cursor:pointer;
+  font:500 10.5px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--ink);
+  background:rgba(250,251,250,.66);-webkit-backdrop-filter:blur(12px) saturate(1.6) brightness(1.08);backdrop-filter:blur(12px) saturate(1.6) brightness(1.08);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),inset 1.5px 2px 0 -1px rgba(255,255,255,.95),0 10px 24px -12px rgba(10,24,30,.55);
+  opacity:0;visibility:hidden;transform:translate(-50%,12px);transition:opacity .5s var(--ease),transform .6s var(--ease),visibility 0s linear .6s}
+.nudge.on{opacity:1;visibility:visible;transform:translate(-50%,0);transition:opacity .6s var(--ease),transform .7s var(--ease),visibility 0s}
+.nudge.dark{color:var(--t-cream);background:rgba(12,24,26,.58);box-shadow:inset 0 0 0 1px rgba(255,236,210,.16),inset 1.5px 2px 0 -1px rgba(255,236,210,.45),0 10px 24px -14px rgba(0,0,0,.6)}
+.nudge svg{width:14px;height:14px;animation:nudge 1.6s var(--ease) infinite}
+@keyframes nudge{0%,100%{transform:translateY(-2px)}50%{transform:translateY(3px)}}
+.menu-open .nudge{opacity:0;visibility:hidden}
+@media (prefers-reduced-motion: reduce){ .nudge svg{animation:none} }
 /* notes pinned to the roof during the fly-in */
 .note{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;will-change:transform;
   opacity:clamp(0, min(calc((var(--hp) - var(--a)) * 14), calc((var(--b) - var(--hp)) * 14)), 1)}
@@ -465,7 +474,6 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .gauge b{font:400 22px/1 var(--serif);letter-spacing:-.01em;color:var(--gold-2)}
 .gauge small{opacity:0;transition:opacity .6s;color:rgba(238,240,234,.8)}
 .grid-down .gauge small{opacity:1}
-#night .scroll-cue{bottom:20px}
 @media (max-width:620px){ .night-card{bottom:14px;padding:18px} .night-card h2{font-size:27px} }
 
 /* ---------- 6b · monsoon: grey skies, still making power ---------- */
@@ -715,7 +723,6 @@ window.ARKA_DATA = function () { if (!window.__arkaData) { try { window.__arkaDa
       <div class="note l" data-note="1" data-a=".66" data-b=".88" style="--a:.66;--b:.88" aria-hidden="true"><i class="leader"></i><i class="dot"></i><div class="nbox glass night"><span>5.1 kW right now</span><b>Twelve modules facing the afternoon.</b></div></div>
       <div class="note" data-note="2" data-a=".9" data-b="1.2" style="--a:.9;--b:1.2" aria-hidden="true"><i class="leader"></i><i class="dot"></i><div class="nbox glass night"><span>Courtyard slopes</span><b>The west slope works until sunset.</b></div></div>
       <div class="live fade-out" aria-label="Sample live reading"><i></i>Live<b><span id="liveKw">3.84</span> kW</b><svg viewBox="0 0 44 14" aria-hidden="true"><path d="M0 13C8 12 12 5 20 3S32 2 36 6 42 11 44 12" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></div>
-      <div class="scroll-cue" aria-hidden="true">Scroll<i></i></div>
     </div>
   </section>
 
@@ -832,7 +839,6 @@ window.ARKA_DATA = function () { if (!window.__arkaData) { try { window.__arkaDa
           <div class="gauge"><span class="batt" aria-hidden="true"><i></i></span><b>82%</b><small>≈ 9 h left</small></div>
         </div>
       </div>
-      <div class="scroll-cue" aria-hidden="true">Keep scrolling<i></i></div>
     </div>
   </section>
 
@@ -957,6 +963,8 @@ window.ARKA_DATA = function () { if (!window.__arkaData) { try { window.__arkaDa
     <div class="legal"><span>© 2026 Arka Energy Pvt. Ltd.</span><span>Privacy · Terms · Licences</span><span>Made in Kerala, under the sun.</span></div>
   </div>
 </footer>
+
+<button class="nudge" id="nudge" type="button" aria-label="Scroll down"><span aria-hidden="true">Scroll</span><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.5v10.5M3.6 8.6 8 13l4.4-4.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 
 <script type="module">
 import * as THREE from 'three';
@@ -3596,6 +3604,27 @@ Promise.race([Promise.all(texLoads.concat([loadPeople()])), new Promise(r => set
     mq.addEventListener('change', e => { if (!e.matches) set(false); });
   }
 
+  /* ---------- "Scroll" nudge: appears when the visitor pauses, hides the moment they move ---------- */
+  function initNudge() {
+    const el = $('#nudge'); if (!el) return;
+    const secs = $$('[data-theme]');
+    let timer = 0, ready = false;
+    const atEnd = () => scrollY + innerHeight >= document.documentElement.scrollHeight - 140;
+    const busy = () => root.classList.contains('menu-open') || /^(INPUT|SELECT|TEXTAREA)$/.test((document.activeElement || {}).tagName || '');
+    const darkBehind = () => { const y = innerHeight - 36; for (const s of secs) { const r = s.getBoundingClientRect(); if (r.top <= y && r.bottom > y) return s.dataset.theme === 'dark'; } return true; };
+    const show = () => { if (!ready || atEnd() || busy()) return; el.classList.toggle('dark', darkBehind()); el.classList.add('on'); };
+    const hide = () => el.classList.remove('on');
+    const arm = (ms = 2200) => { clearTimeout(timer); timer = setTimeout(show, ms); };
+    const moved = () => { hide(); arm(); };
+    addEventListener('scroll', moved, { passive: true });
+    addEventListener('wheel', moved, { passive: true });           // includes scrolling inside the phone, which doesn't move the page
+    addEventListener('touchmove', moved, { passive: true });
+    addEventListener('keydown', e => { if (/^(ArrowDown|ArrowUp|PageDown|PageUp|Space| |End|Home)$/.test(e.key)) moved(); });
+    const start = () => { if (!ready) { ready = true; arm(900); } };
+    addEventListener('arka:ready', start); setTimeout(start, 15000);
+    el.addEventListener('click', () => { hide(); scrollBy({ top: innerHeight * .85, behavior: reduce ? 'auto' : 'smooth' }); });
+  }
+
   /* ---------- reveal + counters ---------- */
   function initReveal() {
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
@@ -3873,7 +3902,7 @@ Promise.race([Promise.all(texLoads.concat([loadPeople()])), new Promise(r => set
     go(); addEventListener('load', go);
   }
   function boot() {
-    initImages(); initCalc(); initNav(); initMenu(); initReveal(); initLive(); initExplore(); initFaq(); initForm(); initDeepLink();
+    initImages(); initCalc(); initNav(); initMenu(); initNudge(); initReveal(); initLive(); initExplore(); initFaq(); initForm(); initDeepLink();
     const later = () => { const idle = window.requestIdleCallback || (f => setTimeout(f, 60)); idle(() => { initLiquidGlass(); idle(() => { initMap(); idle(initDayLoop); }); }); };
     let started = false; const go = () => { if (!started) { started = true; later(); } };
     addEventListener('arka:ready', go); setTimeout(go, 12000);
