@@ -362,8 +362,9 @@ const M = {
   plaster: std({ color: 0xeee2cc, roughness: .95 }),
   granite: std({ color: 0x8c877d, roughness: .86 }),
   floor: std({ map: T.floor, roughness: .28 }),
-  slats: std({ map: T.slats, alphaTest: .35, alphaToCoverage: true, roughness: .7, side: THREE.DoubleSide }),
-  bars: std({ map: T.bars, alphaTest: .35, alphaToCoverage: true, roughness: .7, side: THREE.DoubleSide }),
+  // azhi slats + window bars: blended, not alpha-tested, so the thin repeats stay steady instead of crawling as the view moves
+  slats: std({ map: T.slats, transparent: true, alphaTest: .02, roughness: .7, side: THREE.DoubleSide }),
+  bars: std({ map: T.bars, transparent: true, alphaTest: .02, roughness: .7, side: THREE.DoubleSide }),
   door: std({ map: T.door, roughness: .55, metalness: .05, side: THREE.DoubleSide }),
   brass: std({ color: 0xc89b4a, roughness: .32, metalness: .9 }),
   terracotta: std({ color: 0xa9532e, roughness: .9 }),
