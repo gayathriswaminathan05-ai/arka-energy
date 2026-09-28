@@ -831,11 +831,11 @@ function buildHouse() {
     onWall(mesh(new RoundedBoxGeometry(.26, 1.0, .62, 4, .035), M.eqWhite, H, 0, P + .53, 7.35), .135);
     onWall(mesh(new THREE.BoxGeometry(.22, .04, .56), M.eqGrey, H, 0, P + .02, 7.35), .125);
     const led = mesh(new THREE.BoxGeometry(.006, .46, .016), new THREE.MeshBasicMaterial({ color: new THREE.Color(.3, 1.6, 1.2) }), H, 0, P + .66, 7.35, 0, false); onWall(led, .268);
-    const logo = canvasTex(256, 64, (g, w, h) => { g.clearRect(0, 0, w, h); g.fillStyle = '#39424a'; g.font = '600 30px Geist, sans-serif'; g.letterSpacing = '9px'; g.fillText('ARKA', 36, 44); }, { repeat: false });
+    const logo = canvasTex(256, 64, (g, w, h) => { g.clearRect(0, 0, w, h); g.fillStyle = '#39424a'; g.font = '600 30px "Hanken Grotesk", sans-serif'; g.letterSpacing = '9px'; g.fillText('ARKA', 36, 44); }, { repeat: false });
     const lg = mesh(new THREE.PlaneGeometry(.15, .038), new THREE.MeshBasicMaterial({ map: logo, transparent: true }), H, 0, P + .2, 7.35, Math.PI / 2, false); onWall(lg, .2665);
     // hybrid inverter with its display
     onWall(mesh(new RoundedBoxGeometry(.2, .66, .52, 4, .03), M.eqGrey, H, 0, 2.12, 8.75), .105);
-    const disp = canvasTex(256, 128, (g, w, h) => { g.fillStyle = '#0b1012'; g.fillRect(0, 0, w, h); g.fillStyle = '#9fe3cf'; g.font = '600 46px "Geist Mono", monospace'; g.fillText('4.82', 20, 68); g.font = '500 19px "Geist Mono", monospace'; g.fillStyle = '#8aa0ad'; g.fillText('kW  SOLAR > HOME', 22, 104); for (let i = 0; i < 6; i++) { g.fillStyle = i < 4 ? '#3fd08a' : '#26332e'; g.fillRect(182 + i * 11, 28, 7, 34); } }, { repeat: false });
+    const disp = canvasTex(256, 128, (g, w, h) => { g.fillStyle = '#0b1012'; g.fillRect(0, 0, w, h); g.fillStyle = '#9fe3cf'; g.font = '600 46px Menlo, "DejaVu Sans Mono", monospace'; g.fillText('4.82', 20, 68); g.font = '500 19px Menlo, "DejaVu Sans Mono", monospace'; g.fillStyle = '#8aa0ad'; g.fillText('kW  SOLAR > HOME', 22, 104); for (let i = 0; i < 6; i++) { g.fillStyle = i < 4 ? '#3fd08a' : '#26332e'; g.fillRect(182 + i * 11, 28, 7, 34); } }, { repeat: false });
     onWall(mesh(new THREE.PlaneGeometry(.26, .13), new THREE.MeshBasicMaterial({ map: disp }), H, 0, 2.25, 8.75, Math.PI / 2, false), .2065);
     for (const dz of [-.285, .285]) for (let i = 0; i < 8; i++) onWall(mesh(new THREE.BoxGeometry(.15, .012, .05), M.eqGrey, H, 0, 1.88 + i * .065, 8.75 + dz, 0, false), .09);
     for (let i = 0; i < 4; i++) onWall(mesh(new THREE.CylinderGeometry(.018, .018, .06, 10), M.cable, H, 0, 1.77, 8.6 + i * .1, 0, false), .1);
@@ -845,7 +845,7 @@ function buildHouse() {
     // KSEB net meter on a teak board
     onWall(mesh(new THREE.BoxGeometry(.03, .82, .56), M.wood, H, 0, 2.05, 6.15), .015);
     onWall(mesh(new RoundedBoxGeometry(.13, .46, .3, 3, .02), M.eqWhite, H, 0, 2.08, 6.15), .095);
-    const lcd = canvasTex(256, 160, (g, w, h) => { g.fillStyle = '#c3d3bc'; g.fillRect(0, 0, w, h); g.fillStyle = '#18221a'; g.font = '600 50px "Geist Mono", monospace'; g.fillText('0412.6', 18, 74); g.font = '500 19px "Geist Mono", monospace'; g.fillText('kWh  EXPORT >', 20, 114); g.fillText('KSEB  NET', 20, 144); }, { repeat: false });
+    const lcd = canvasTex(256, 160, (g, w, h) => { g.fillStyle = '#c3d3bc'; g.fillRect(0, 0, w, h); g.fillStyle = '#18221a'; g.font = '600 50px Menlo, "DejaVu Sans Mono", monospace'; g.fillText('0412.6', 18, 74); g.font = '500 19px Menlo, "DejaVu Sans Mono", monospace'; g.fillText('kWh  EXPORT >', 20, 114); g.fillText('KSEB  NET', 20, 144); }, { repeat: false });
     onWall(mesh(new THREE.PlaneGeometry(.2, .125), new THREE.MeshBasicMaterial({ map: lcd }), H, 0, 2.18, 6.15, Math.PI / 2, false), .1615);
     onWall(mesh(new THREE.SphereGeometry(.011, 8, 6), new THREE.MeshBasicMaterial({ color: new THREE.Color(2.4, .25, .15) }), H, 0, 1.96, 6.07, 0, false), .161);
     // conduits: roof → isolator → inverter → battery, inverter → meter, meter → service head
@@ -1870,17 +1870,17 @@ function drawAppFull(t) {
   for (let x = 0; x <= w; x += 60) { g.beginPath(); g.moveTo(x + .5, 0); g.lineTo(x + .5, h); g.stroke(); }
   for (let y = 0; y <= h; y += 60) { g.beginPath(); g.moveTo(0, y + .5); g.lineTo(w, y + .5); g.stroke(); }
   const F = (wgt, px, fam) => `${wgt} ${px}px ${fam}`;
-  const serif = '"Tenor Sans", "Geist", sans-serif', sans = '"Geist", system-ui, sans-serif', mono = '"Geist Mono", ui-monospace, monospace';
+  const serif = '"Tenor Sans", "Hanken Grotesk", sans-serif', sans = '"Hanken Grotesk", system-ui, sans-serif';
   const INK = '#15181C', MUT = '#5B636B', ACC = '#1C5B53', GOLD = '#C08A2B', SL = '#3D5467', CARD = '#FFFFFF';
   const card = (x, y, cw, ch, dark) => { g.fillStyle = dark ? '#123D39' : CARD; roundRect(g, x, y, cw, ch, 28); g.fill(); if (!dark) { g.strokeStyle = 'rgba(20,23,27,.07)'; g.lineWidth = 2; roundRect(g, x, y, cw, ch, 28); g.stroke(); } };
-  const label = (txt, x, y, col = SL) => { g.fillStyle = col; g.font = F(500, 21, mono); g.fillText(txt, x, y); };
+  const label = (txt, x, y, col = SL) => { g.fillStyle = col; g.font = F(600, 24, sans); g.fillText(txt, x, y); };
   // brand
   g.strokeStyle = GOLD; g.lineWidth = 5; g.beginPath(); g.arc(78, 170, 24, Math.PI, 0); g.stroke();
   g.fillStyle = INK; for (let i = 0; i < 3; i++) g.fillRect(54 + i * 17, 180, 14, 8);
   g.font = F(500, 44, serif); g.fillText('Arka', 118, 184);
   g.fillStyle = '#E3E6E6'; g.beginPath(); g.arc(w - 78, 168, 32, 0, 6.283); g.fill(); g.fillStyle = MUT; g.font = F(600, 24, sans); g.textAlign = 'center'; g.fillText('LM', w - 78, 177); g.textAlign = 'left';
   // today
-  label('TODAY · YOUR ROOF MADE', 48, 282, ACC);
+  label('Today, your roof made', 48, 282, ACC);
   const val = (19.2 + ((t * .02) % 2.4)).toFixed(1);
   g.fillStyle = INK; g.font = F(300, 150, serif); g.fillText(val, 42, 420);
   const vw = g.measureText(val).width; g.font = F(400, 40, sans); g.fillText('kWh', 56 + vw, 420);
@@ -1890,38 +1890,38 @@ function drawAppFull(t) {
   g.fillStyle = INK; g.font = F(500, 26, sans); g.fillText('Solar output, hour by hour', cx + 34, cy + 52);
   const hours = 13, bw = (cw - 80) / hours, now = 18;
   for (let i = 0; i < hours; i++) { const v = Math.max(.06, Math.sin(Math.PI * (i + .5) / hours)); const bh = v * (ch - 90), x = cx + 40 + i * bw, y = cy + ch - bh + 10; g.fillStyle = i + 6 === now ? INK : (i + 6 < now ? ACC : 'rgba(28,91,83,.2)'); roundRect(g, x + 5, y, bw - 10, bh, 8); g.fill(); }
-  g.fillStyle = MUT; g.font = F(500, 21, mono); ['6a', '9a', '12p', '3p', '6p'].forEach((l, i) => g.fillText(l, cx + 40 + i * 3 * bw + 2, cy + ch + 56));
+  g.fillStyle = MUT; g.font = F(500, 22, sans); ['6 am', '9 am', '12 pm', '3 pm', '6 pm'].forEach((l, i) => g.fillText(l, cx + 40 + i * 3 * bw + 2, cy + ch + 56));
   // savings + battery
   card(48, 960, (w - 120) / 2, 210, true);
-  label('SAVED · SEPT', 78, 1012, '#E9C27A'); g.fillStyle = '#F2F2EE'; g.font = F(400, 66, serif); g.fillText('₹2,860', 76, 1096); g.fillStyle = 'rgba(242,242,238,.7)'; g.font = F(400, 23, sans); g.fillText('vs. your old bill', 78, 1140);
+  label('Saved in September', 78, 1012, '#E9C27A'); g.fillStyle = '#F2F2EE'; g.font = F(400, 66, serif); g.fillText('₹2,860', 76, 1096); g.fillStyle = 'rgba(242,242,238,.7)'; g.font = F(400, 23, sans); g.fillText('vs. your old bill', 78, 1140);
   const bx = 72 + (w - 120) / 2; card(bx, 960, (w - 120) / 2, 210);
-  label('BATTERY · TONIGHT', bx + 30, 1012); g.fillStyle = INK; g.font = F(400, 66, serif); g.fillText(`${86 + Math.round(Math.sin(t * .3) * 2)}%`, bx + 28, 1096);
+  label('Battery for tonight', bx + 30, 1012); g.fillStyle = INK; g.font = F(400, 66, serif); g.fillText(`${86 + Math.round(Math.sin(t * .3) * 2)}%`, bx + 28, 1096);
   g.fillStyle = '#E3E6E6'; roundRect(g, bx + 30, 1120, (w - 120) / 2 - 60, 14, 7); g.fill(); g.fillStyle = '#2f9a6a'; roundRect(g, bx + 30, 1120, ((w - 120) / 2 - 60) * .86, 14, 7); g.fill();
   // KSEB export
-  card(48, 1196, w - 96, 130); label('SENT TO KSEB TODAY', 80, 1248, ACC); g.fillStyle = INK; g.font = F(500, 40, sans); g.fillText('6.2 kWh  →  credit', 80, 1300);
+  card(48, 1196, w - 96, 130); label('Sent to KSEB today', 80, 1248, ACC); g.fillStyle = INK; g.font = F(500, 40, sans); g.fillText('6.2 kWh  →  credit', 80, 1300);
   // this month
-  card(48, 1356, w - 96, 420); g.fillStyle = INK; g.font = F(500, 26, sans); g.fillText('September, day by day', 82, 1410); label('568 kWh · ↑ 9% vs Aug', 82, 1446);
+  card(48, 1356, w - 96, 420); g.fillStyle = INK; g.font = F(500, 26, sans); g.fillText('September, day by day', 82, 1410); label('568 kWh, up 9% on August', 82, 1446);
   for (let d = 0; d < 30; d++) { const v = .45 + .45 * Math.abs(Math.sin(d * 1.7)) * (d % 7 === 3 ? .4 : 1); const bh = v * 240, x = 82 + d * 18.6; g.fillStyle = d === 25 ? INK : (d < 25 ? SL : 'rgba(61,84,103,.22)'); roundRect(g, x, 1720 - bh, 12, bh, 5); g.fill(); }
   // your roof, panel by panel
-  card(48, 1806, w - 96, 470); g.fillStyle = INK; g.font = F(500, 26, sans); g.fillText('Your roof, panel by panel', 82, 1860); label('16 MODULES · ALL HEALTHY', 82, 1896, '#2f8f5b');
-  for (let r = 0; r < 2; r++) for (let c = 0; c < 8; c++) { const x = 82 + c * 70, y = 1930 + r * 150, k = .7 + .3 * Math.abs(Math.sin(r * 3 + c * 1.3)); g.fillStyle = `rgb(${Math.round(20 + 20 * k)},${Math.round(40 + 40 * k)},${Math.round(70 + 60 * k)})`; roundRect(g, x, y, 60, 130, 6); g.fill(); g.strokeStyle = 'rgba(255,255,255,.25)'; g.lineWidth = 1; for (let q = 1; q < 6; q++) { g.beginPath(); g.moveTo(x, y + q * 21.6); g.lineTo(x + 60, y + q * 21.6); g.stroke(); } g.fillStyle = '#E9C27A'; g.font = F(500, 18, mono); g.fillText((300 + Math.round(k * 240)) + 'W', x + 4, y + 124); }
+  card(48, 1806, w - 96, 470); g.fillStyle = INK; g.font = F(500, 26, sans); g.fillText('Your roof, panel by panel', 82, 1860); label('All 16 modules healthy', 82, 1896, '#2f8f5b');
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 8; c++) { const x = 82 + c * 70, y = 1930 + r * 150, k = .7 + .3 * Math.abs(Math.sin(r * 3 + c * 1.3)); g.fillStyle = `rgb(${Math.round(20 + 20 * k)},${Math.round(40 + 40 * k)},${Math.round(70 + 60 * k)})`; roundRect(g, x, y, 60, 130, 6); g.fill(); g.strokeStyle = 'rgba(255,255,255,.25)'; g.lineWidth = 1; for (let q = 1; q < 6; q++) { g.beginPath(); g.moveTo(x, y + q * 21.6); g.lineTo(x + 60, y + q * 21.6); g.stroke(); } g.fillStyle = '#E9C27A'; g.font = F(600, 18, sans); g.fillText((300 + Math.round(k * 240)) + 'W', x + 4, y + 124); }
   g.fillStyle = MUT; g.font = F(400, 23, sans); g.fillText('West slope peaks at 3:10 pm, on the sunset side of the tharavadu.', 82, 2246);
   // impact
-  card(48, 2306, (w - 120) / 2, 250); label('THIS YEAR', 78, 2356); g.fillStyle = INK; g.font = F(400, 70, serif); g.fillText('3.1 t', 76, 2446); g.fillStyle = MUT; g.font = F(400, 23, sans); g.fillText('CO₂ kept out of the air', 78, 2490); g.fillText('≈ 142 trees planted', 78, 2524);
-  card(bx, 2306, (w - 120) / 2, 250, true); label('NEXT SERVICE', bx + 30, 2356, '#E9C27A'); g.fillStyle = '#F2F2EE'; g.font = F(400, 60, serif); g.fillText('14 Oct', bx + 28, 2442); g.fillStyle = 'rgba(242,242,238,.7)'; g.font = F(400, 23, sans); g.fillText('Panel rinse · free', bx + 30, 2486); g.fillText('Tap to reschedule', bx + 30, 2520);
+  card(48, 2306, (w - 120) / 2, 250); label('This year', 78, 2356); g.fillStyle = INK; g.font = F(400, 70, serif); g.fillText('3.1 t', 76, 2446); g.fillStyle = MUT; g.font = F(400, 23, sans); g.fillText('CO₂ kept out of the air', 78, 2490); g.fillText('≈ 142 trees planted', 78, 2524);
+  card(bx, 2306, (w - 120) / 2, 250, true); label('Next service', bx + 30, 2356, '#E9C27A'); g.fillStyle = '#F2F2EE'; g.font = F(400, 60, serif); g.fillText('14 Oct', bx + 28, 2442); g.fillStyle = 'rgba(242,242,238,.7)'; g.font = F(400, 23, sans); g.fillText('Free panel rinse', bx + 30, 2486); g.fillText('Tap to reschedule', bx + 30, 2520);
   // bill comparison
   card(48, 2586, w - 96, 360); g.fillStyle = INK; g.font = F(500, 26, sans); g.fillText('Your KSEB bill', 82, 2640);
-  [['Before Arka', 1, '#C4C9CD', '₹3,500'], ['Last month', .16, ACC, '₹560'], ['This month', .12, INK, '₹420']].forEach(([l, k, c, v], i) => { const y = 2692 + i * 78; g.fillStyle = MUT; g.font = F(400, 22, sans); g.fillText(l, 82, y + 22); g.fillStyle = c; roundRect(g, 260, y, 300 * k + 8, 28, 6); g.fill(); g.fillStyle = INK; g.font = F(500, 24, mono); g.fillText(v, 580, y + 23); });
+  [['Before Arka', 1, '#C4C9CD', '₹3,500'], ['Last month', .16, ACC, '₹560'], ['This month', .12, INK, '₹420']].forEach(([l, k, c, v], i) => { const y = 2692 + i * 78; g.fillStyle = MUT; g.font = F(400, 22, sans); g.fillText(l, 82, y + 22); g.fillStyle = c; roundRect(g, 260, y, 300 * k + 8, 28, 6); g.fill(); g.fillStyle = INK; g.font = F(600, 24, sans); g.fillText(v, 580, y + 23); });
   // tip + footer
-  card(48, 2976, w - 96, 220); label('TONIGHT', 82, 3026, ACC); g.fillStyle = INK; g.font = F(400, 34, serif); g.fillText('Outage forecast after 9 pm. Your', 82, 3080); g.fillText('battery will carry the house.', 82, 3122);
-  g.fillStyle = MUT; g.font = F(500, 20, mono); g.fillText('ARKA ENERGY · KOCHI', 82, 3270); g.fillText('v4.2 · Synced 2 min ago', 82, 3302);
+  card(48, 2976, w - 96, 220); label('Tonight', 82, 3026, ACC); g.fillStyle = INK; g.font = F(400, 34, serif); g.fillText('Outage forecast after 9 pm. Your', 82, 3080); g.fillText('battery will carry the house.', 82, 3122);
+  g.fillStyle = MUT; g.font = F(400, 21, sans); g.fillText('Arka Energy, Kochi', 82, 3270); g.fillText('Version 4.2, synced 2 min ago', 82, 3302);
   APP.max = h - SCREEN.h + 150; APP.dirty = true;
 }
 function drawPhone(cv) {
   if (!APP.full) return;
   const g = cv.getContext('2d'), w = cv.width, h = cv.height;
   g.drawImage(APP.full, 0, Math.round(APP.scroll), w, h, 0, 0, w, h);
-  const F = (wgt, px, fam) => `${wgt} ${px}px ${fam}`, sans = '"Geist", system-ui, sans-serif';
+  const F = (wgt, px, fam) => `${wgt} ${px}px ${fam}`, sans = '"Hanken Grotesk", system-ui, sans-serif';
   g.fillStyle = 'rgba(244,244,241,.94)'; g.fillRect(0, 0, w, 112);
   g.fillStyle = '#15181C'; g.font = F(600, 30, sans); g.fillText('6:25', 62, 72);
   // signal, wifi, battery

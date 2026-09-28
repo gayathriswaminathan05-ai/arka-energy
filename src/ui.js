@@ -33,7 +33,6 @@
       $('#rSub').textContent = inr(p.subsidy);
       $('#rPay').textContent = p.payback.toFixed(1) + ' yrs';
       $('#vNow').textContent = inr(bill); $('#vNew').textContent = inr(p.newBill);
-      $('#bNew').style.width = Math.max(4, p.newBill / bill * 100).toFixed(1) + '%';
       yearChart.set({ kw: p.kw, units: p.units });
     };
     rng.addEventListener('input', () => set(+rng.value, 'range'));
@@ -57,7 +56,7 @@
       if (!cur) cur = { gen: gen.map(() => 0), use: use.map(() => 0) };
       $('#ycKw') && ($('#ycKw').textContent = `${plan.kw % 1 ? plan.kw.toFixed(1) : plan.kw} kW system`);
       const tg = gen.reduce((a, b) => a + b, 0), tu = use.reduce((a, b) => a + b, 0);
-      $('#ycTot') && ($('#ycTot').textContent = `≈ ${Math.round(tg).toLocaleString('en-IN')} units a year · ${Math.round(tg / tu * 100)}% of use`);
+      $('#ycTot') && ($('#ycTot').textContent = `About ${Math.round(tg).toLocaleString('en-IN')} units a year, ${Math.round(tg / tu * 100)}% of what you use`);
     };
     const draw = () => {
       if (!svg || !target) return;
@@ -135,8 +134,18 @@
     let timer = 0, ready = false;
     const atEnd = () => scrollY + innerHeight >= document.documentElement.scrollHeight - 140;
     const busy = () => root.classList.contains('menu-open') || /^(INPUT|SELECT|TEXTAREA)$/.test((document.activeElement || {}).tagName || '');
-    const darkBehind = () => { const y = innerHeight - 36; for (const s of secs) { const r = s.getBoundingClientRect(); if (r.top <= y && r.bottom > y) return s.dataset.theme === 'dark'; } return true; };
-    const show = () => { if (!ready || atEnd() || busy()) return; el.classList.toggle('dark', darkBehind()); el.classList.add('on'); };
+    // glass cards pinned to the bottom of the screen: the nudge rises above them instead of covering them
+    const cards = $$('.glass:not(.nav)');
+    const seen = n => { for (let e = n; e && e !== document.body; e = e.parentElement) { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity < .05) return false; } return true; };
+    const cardTop = () => { const x0 = innerWidth / 2 - 70, x1 = innerWidth / 2 + 70, y0 = innerHeight - 76; let top = innerHeight;
+      for (const c of cards) { const r = c.getBoundingClientRect(); if (r.bottom > y0 && r.top < innerHeight && r.right > x0 && r.left < x1 && seen(c)) top = Math.min(top, r.top); } return top; };
+    const darkBehind = (y = innerHeight - 36) => { for (const s of secs) { const r = s.getBoundingClientRect(); if (r.top <= y && r.bottom > y) return s.dataset.theme === 'dark'; } return true; };
+    const show = () => {
+      if (!ready || atEnd() || busy()) return;
+      const top = cardTop(); if (top < innerHeight * .45) return;          // a tall card fills the bottom: stay out of the way
+      const lift = top < innerHeight ? innerHeight - top + 10 : 0;
+      el.style.setProperty('--lift', lift + 'px'); el.classList.toggle('dark', darkBehind(innerHeight - 36 - lift)); el.classList.add('on');
+    };
     const hide = () => el.classList.remove('on');
     const arm = (ms = 2200) => { clearTimeout(timer); timer = setTimeout(show, ms); };
     const moved = () => { hide(); arm(); };
@@ -162,11 +171,6 @@
     $$('[data-count]').forEach(el => cio.observe(el));
   }
 
-  /* ---------- live hero reading ---------- */
-  function initLive() {
-    const el = $('#liveKw'); if (!el) return;
-    let v = 3.84; setInterval(() => { v = Math.min(4.3, Math.max(3.4, v + (Math.random() - .5) * .08)); el.textContent = v.toFixed(2); }, 1800);
-  }
 
   /* ---------- the hero card steps aside while you explore the scene ---------- */
   function initExplore() {
@@ -284,23 +288,23 @@
       s += `<g class="dist" tabindex="0" data-i="${i}" transform="translate(${f1(x)} ${f1(y)})"><g class="seal"><circle r="${f1(r + 7)}" fill="${GOLD}" fill-opacity=".1"/><path d="${rays}" stroke="${GOLD}" stroke-width=".9" stroke-linecap="round"/><circle r="${f1(r)}" fill="url(#mp-gilt)"/><circle r="${f1(r * .55)}" fill="none" stroke="#6b4a1c" stroke-width=".5"/></g><circle r="${f1(r + 8)}" fill="transparent"/></g>`;
     });
     s += lab('The Arabian Sea', -120, 250, 17, `letter-spacing="4" transform="rotate(-62 -120 250)" opacity=".45"`);
-    s += `<text x="250" y="120" font-family="Geist Mono, monospace" font-size="8" letter-spacing="3" fill="${CREAM}" opacity=".35" transform="rotate(58 250 120)">WESTERN GHATS</text>`;
+    s += `<text x="250" y="120" font-family="Tenor Sans, sans-serif" font-size="9" letter-spacing="3.5" fill="${CREAM}" opacity=".35" transform="rotate(58 250 120)">WESTERN GHATS</text>`;
     s += `<g transform="translate(-58 330) scale(.9)" stroke="${GOLD}" stroke-width=".8" fill="none" opacity=".7"><path d="M-22 6Q0 14 22 5L18 9Q0 15 -18 10Z"/><path d="M-2 6L-2 -26M-2 -24Q14 -14 20 4L-2 4"/><path d="M-2 -20Q-14 -10 -18 3L-2 3"/><path d="M-30 13q6 -2 12 0t12 0M4 15q6 -2 12 0t12 0" stroke-opacity=".5"/></g>`;
     { const [cx, cy] = cr; let pts16 = '';
       for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2 - Math.PI / 2, L = i % 4 === 0 ? 44 : i % 2 === 0 ? 30 : 19, w = i % 4 === 0 ? 6.5 : i % 2 === 0 ? 5 : 3.5, ax = Math.cos(a), ay = Math.sin(a), px = -ay, py = ax;
         pts16 += `<path d="M${f1(px * w)} ${f1(py * w)}L${f1(ax * L)} ${f1(ay * L)}L${f1(-px * w)} ${f1(-py * w)}" fill="${i % 4 === 0 ? 'rgba(231,194,122,.22)' : 'none'}" stroke="${GOLD}" stroke-width=".6"/><path d="M0 0L${f1(ax * L)} ${f1(ay * L)}" stroke="${GOLD}" stroke-width=".4" stroke-opacity=".7"/>`; }
       let ticks = ''; for (let i = 0; i < 64; i++) { const a = i / 64 * Math.PI * 2, r1 = 50, r2 = i % 4 ? 53 : 56; ticks += `M${f1(Math.cos(a) * r1)} ${f1(Math.sin(a) * r1)}L${f1(Math.cos(a) * r2)} ${f1(Math.sin(a) * r2)}`; }
       s += `<g transform="translate(${cx} ${cy})" opacity=".85"><circle r="58" fill="none" stroke="${GOLD}" stroke-width=".7"/><circle r="50" fill="none" stroke="${GOLD}" stroke-width=".45"/><path d="${ticks}" stroke="${GOLD}" stroke-width=".5"/>${pts16}<circle r="3.5" fill="url(#mp-gilt)"/>
-        <text y="-64" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" letter-spacing="1" fill="${GOLD}">N</text></g>`; }
+        <text y="-64" text-anchor="middle" font-family="Tenor Sans, sans-serif" font-size="11" fill="${GOLD}">N</text></g>`; }
     { const x = -168, y = 575, km = k / 111; let bar = ''; for (let i = 0; i < 4; i++) bar += `<rect x="${f1(x + i * 12.5 * km)}" y="${y}" width="${f1(12.5 * km)}" height="3" fill="${i % 2 ? 'none' : GOLD}" stroke="${GOLD}" stroke-width=".5"/>`;
-      s += `${bar}<text x="${x}" y="${y - 6}" font-family="Geist Mono, monospace" font-size="7.5" letter-spacing="1.4" fill="${CREAM}" opacity=".55">KILOMETRES</text><text x="${x - 1}" y="${y + 13}" font-family="Geist Mono, monospace" font-size="7.5" fill="${CREAM}" opacity=".55">0</text><text x="${f1(x + 50 * km - 6)}" y="${y + 13}" font-family="Geist Mono, monospace" font-size="7.5" fill="${CREAM}" opacity=".55">50</text>`; }
-    s += `<g transform="translate(-160 6)"><text font-family="Geist Mono, monospace" font-size="8.5" letter-spacing="2.4" fill="${GOLD}">KERALA · MALABAR COAST</text><text y="22" font-family="Tenor Sans, sans-serif" font-size="15" fill="${CREAM}" opacity=".85">Arka homes, 2026</text></g>`;
+      s += `${bar}<text x="${x}" y="${y - 6}" font-family="Hanken Grotesk, sans-serif" font-size="8.5" fill="${CREAM}" opacity=".6">Kilometres</text><text x="${x - 1}" y="${y + 13}" font-family="Hanken Grotesk, sans-serif" font-size="8.5" fill="${CREAM}" opacity=".55">0</text><text x="${f1(x + 50 * km - 6)}" y="${y + 13}" font-family="Hanken Grotesk, sans-serif" font-size="8.5" fill="${CREAM}" opacity=".55">50</text>`; }
+    s += `<g transform="translate(-160 6)"><text y="14" font-family="Tenor Sans, sans-serif" font-size="16" fill="${CREAM}" opacity=".85">Arka homes, 2026</text></g>`;
     s += `</g>`;
     { const ix = X0 + 22, iy = Y0 + 22, iw = SW - 44, ih = SH - 44;
       s += `<rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" fill="none" stroke="${GOLD}" stroke-opacity=".7" stroke-width=".8"/><rect x="${ix - 7}" y="${iy - 7}" width="${iw + 14}" height="${ih + 14}" fill="none" stroke="${GOLD}" stroke-opacity=".45" stroke-width=".8"/>`;
       let segs = '';
-      for (let la = 8.5; la < 13; la += .25) { const y = (lat0 - la) * k; if (y < iy || y + .25 * k > iy + ih) continue; if (Math.round(la * 4) % 2) segs += `<rect x="${ix - 7}" y="${f1(y)}" width="7" height="${f1(.25 * k)}" fill="${GOLD}" fill-opacity=".45"/><rect x="${ix + iw}" y="${f1(y)}" width="7" height="${f1(.25 * k)}" fill="${GOLD}" fill-opacity=".45"/>`; if (Math.abs(la - Math.round(la)) < .01) segs += `<text x="${ix + 5}" y="${f1(y + 3)}" font-family="Geist Mono, monospace" font-size="7.5" fill="${CREAM}" opacity=".45">${la}°N</text>`; }
-      for (let lo = 73.25; lo < 78; lo += .25) { const x = (lo - lon0) * k; if (x < ix || x + .25 * k > ix + iw) continue; if (Math.round(lo * 4) % 2) segs += `<rect x="${f1(x)}" y="${iy - 7}" width="${f1(.25 * k)}" height="7" fill="${GOLD}" fill-opacity=".45"/><rect x="${f1(x)}" y="${iy + ih}" width="${f1(.25 * k)}" height="7" fill="${GOLD}" fill-opacity=".45"/>`; if (Math.abs(lo - Math.round(lo)) < .01) segs += `<text x="${f1(x + 3)}" y="${iy + 12}" font-family="Geist Mono, monospace" font-size="7.5" fill="${CREAM}" opacity=".45">${lo}°E</text>`; }
+      for (let la = 8.5; la < 13; la += .25) { const y = (lat0 - la) * k; if (y < iy || y + .25 * k > iy + ih) continue; if (Math.round(la * 4) % 2) segs += `<rect x="${ix - 7}" y="${f1(y)}" width="7" height="${f1(.25 * k)}" fill="${GOLD}" fill-opacity=".45"/><rect x="${ix + iw}" y="${f1(y)}" width="7" height="${f1(.25 * k)}" fill="${GOLD}" fill-opacity=".45"/>`; if (Math.abs(la - Math.round(la)) < .01) segs += `<text x="${ix + 5}" y="${f1(y + 3)}" font-family="Hanken Grotesk, sans-serif" font-size="8.5" fill="${CREAM}" opacity=".45">${la}°N</text>`; }
+      for (let lo = 73.25; lo < 78; lo += .25) { const x = (lo - lon0) * k; if (x < ix || x + .25 * k > ix + iw) continue; if (Math.round(lo * 4) % 2) segs += `<rect x="${f1(x)}" y="${iy - 7}" width="${f1(.25 * k)}" height="7" fill="${GOLD}" fill-opacity=".45"/><rect x="${f1(x)}" y="${iy + ih}" width="${f1(.25 * k)}" height="7" fill="${GOLD}" fill-opacity=".45"/>`; if (Math.abs(lo - Math.round(lo)) < .01) segs += `<text x="${f1(x + 3)}" y="${iy + 12}" font-family="Hanken Grotesk, sans-serif" font-size="8.5" fill="${CREAM}" opacity=".45">${lo}°E</text>`; }
       s += segs; }
     s += `</svg>`;
     host.insertAdjacentHTML('beforeend', s);
@@ -381,7 +385,7 @@
       { const x = ((t * 14) % (W + 300)) - 150, y = hz + 22; g.fillStyle = rgb(mix(sil.match(/\d+/g).slice(0, 3).map(Number), [0, 0, 0], .1)); g.beginPath(); g.moveTo(x - 40, y); g.quadraticCurveTo(x, y + 9, x + 40, y); g.lineTo(x + 30, y + 5); g.lineTo(x - 30, y + 5); g.fill(); g.beginPath(); g.ellipse(x - 4, y - 2, 26, 8, 0, Math.PI, 0); g.fill(); if (!day || low > .6) { g.fillStyle = 'rgba(255,190,110,.8)'; for (let i = 0; i < 4; i++) g.fillRect(x - 22 + i * 11, y - 5, 3, 3); } }
       // the time, in the corner
       const mins = Math.round((6 * 60 + u * 1440)) % 1440, hh = Math.floor(mins / 60), mm = mins % 60;
-      g.fillStyle = 'rgba(238,240,234,.75)'; g.font = '500 11px "Geist Mono", monospace'; g.fillText(`${(hh % 12) || 12}:${String(mm).padStart(2, '0')} ${hh < 12 ? 'AM' : 'PM'}  ·  ${cut ? 'GRID OFF · BATTERY ON' : day ? (elev > .15 ? 'SOLAR ON' : 'LOW SUN') : 'BATTERY'}`, 16, 24);
+      g.fillStyle = 'rgba(238,240,234,.75)'; g.font = '500 12.5px "Hanken Grotesk", sans-serif'; g.fillText(`${(hh % 12) || 12}:${String(mm).padStart(2, '0')} ${hh < 12 ? 'AM' : 'PM'}    ${cut ? 'Grid off, on battery' : day ? (elev > .15 ? 'Solar on' : 'Low sun') : 'On battery'}`, 16, 24);
     }
     const loop = ts => { if (!on) return; raf = requestAnimationFrame(loop); if (ts - lastDraw < 32) return; lastDraw = ts; draw(ts); };
     new IntersectionObserver(es => es.forEach(e => { on = e.isIntersecting; if (on) { cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); } })).observe(cv);
@@ -396,7 +400,7 @@
     const f = $('#leadForm'); if (!f) return;
     const sel = $('#fDist'); DIST.map(d => d[0]).sort().forEach(n => sel.insertAdjacentHTML('beforeend', `<option>${n}</option>`));
     const err = $('#fErr'), next = $('#fNext'), back = $('#fBack'), lbl = $('#fNext .lbl');
-    const go = n => { f.dataset.step = n; $('#pLbl').textContent = `${Math.min(n, 2)} / 2`; $('#pFill').style.width = (n >= 2 ? 100 : 50) + '%'; back.hidden = n !== 2; lbl.textContent = n === 2 ? 'Request my free survey' : 'Next'; err.textContent = ''; };
+    const go = n => { f.dataset.step = n; $('#pLbl').textContent = `Step ${Math.min(n, 2)} of 2`; $('#pFill').style.width = (n >= 2 ? 100 : 50) + '%'; back.hidden = n !== 2; lbl.textContent = n === 2 ? 'Request my free survey' : 'Next'; err.textContent = ''; };
     f.addEventListener('submit', e => {
       e.preventDefault();
       if (f.dataset.step === '1') {
@@ -426,7 +430,7 @@
     go(); addEventListener('load', go);
   }
   function boot() {
-    initImages(); initCalc(); initNav(); initMenu(); initNudge(); initReveal(); initLive(); initExplore(); initFaq(); initForm(); initDeepLink();
+    initImages(); initCalc(); initNav(); initMenu(); initNudge(); initReveal(); initExplore(); initFaq(); initForm(); initDeepLink();
     const later = () => { const idle = window.requestIdleCallback || (f => setTimeout(f, 60)); idle(() => { initLiquidGlass(); idle(() => { initMap(); idle(initDayLoop); }); }); };
     let started = false; const go = () => { if (!started) { started = true; later(); } };
     addEventListener('arka:ready', go); setTimeout(go, 12000);
