@@ -87,8 +87,10 @@ h2 em,h1 em,h3 em{font-style:normal;font-weight:inherit;color:inherit}
 .btn.ghost{background:transparent;color:inherit;padding-left:4px;padding-right:4px}
 .btn.ghost span{transition:transform .25s var(--ease)}
 .btn.ghost:hover span{transform:translateY(2px)}
+@property --hz{syntax:"<percentage>";inherits:true;initial-value:57%}
 .btn.cta{--hz:57%;overflow:hidden;isolation:isolate;color:#F8F3E7;background:#0F3B37;padding:15px 78px 15px 20px;min-height:48px;text-shadow:0 1px 10px rgba(0,0,0,.45);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 1px 0 rgba(255,255,255,.2),0 14px 30px -16px rgba(15,59,55,.85)}
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 1px 0 rgba(255,255,255,.2),0 14px 30px -16px rgba(15,59,55,.85);
+  transition:transform .25s var(--ease),box-shadow .35s,color .7s var(--ease),text-shadow .7s var(--ease),--hz 1.1s cubic-bezier(.2,.8,.2,1)}
 .btn.cta.sm{padding:12px 66px 12px 18px;min-height:42px;font-size:13.5px}
 .btn.cta:hover{box-shadow:inset 0 0 0 1px rgba(255,255,255,.2),0 0 0 5px rgba(231,194,122,.2),0 18px 34px -16px rgba(15,59,55,.9)}
 .btn.cta .scene{position:absolute;inset:0;z-index:-1;border-radius:inherit;overflow:hidden;pointer-events:none;
@@ -102,14 +104,33 @@ h2 em,h1 em,h3 em{font-style:normal;font-weight:inherit;color:inherit}
    linear-gradient(180deg,#123F3A,#0A2B28);
   background-size:100% 100%,100% 8px,100% 100%;animation:shimmer 1.8s linear infinite}
 .btn.cta .sun{position:absolute;left:84%;top:22%;width:17px;height:17px;margin:-8.5px 0 0 -8.5px;border-radius:50%;z-index:2;
-  background:radial-gradient(circle,#FFF8E4 0 36%,#FFD58A 64%,#F5A24F 100%);box-shadow:0 0 14px 5px rgba(255,190,110,.6);animation:sunset 9s cubic-bezier(.45,.05,.55,.95) infinite}
-.btn.cta:hover .sun{animation-duration:4.5s}
+  background:radial-gradient(circle,#FFF8E4 0 36%,#FFD58A 64%,#F5A24F 100%);box-shadow:0 0 14px 5px rgba(255,190,110,.6);animation:sunset 9s cubic-bezier(.45,.05,.55,.95) infinite;transition:filter .5s}
+/* hover: sunrise. A new sun climbs out of the water, the sky turns morning gold, the water settles lower
+   and the label goes dark to stay readable. On touch it plays for a moment after a tap (.rise, set in ui.js). */
+.btn.cta .scene::before{content:"";position:absolute;inset:0;z-index:1;opacity:0;transition:opacity .9s var(--ease);
+  background:radial-gradient(120px 50px at 84% var(--hz),rgba(255,246,214,.95),rgba(255,226,170,0) 76%),linear-gradient(180deg,#F4DCA4 0%,#EFC98C calc(var(--hz) - 1%),transparent var(--hz))}
+.btn.cta .dawn{position:absolute;left:84%;top:118%;width:19px;height:19px;margin:-9.5px 0 0 -9.5px;border-radius:50%;z-index:2;
+  background:radial-gradient(circle,#FFFDF2 0 40%,#FFE3A6 70%,#F7B866 100%);box-shadow:0 0 18px 8px rgba(255,214,150,.75);transition:top 1.2s cubic-bezier(.2,.8,.2,1)}
+.btn.cta .streak{position:absolute;left:84%;top:var(--hz);bottom:0;width:16px;margin-left:-8px;z-index:4;background:linear-gradient(180deg,rgba(255,240,200,.95),rgba(255,240,200,0));
+  transform:scaleY(0);transform-origin:top;transition:transform .9s var(--ease) .25s}
+.btn.cta:is(:focus-visible,.rise){--hz:76%;color:#0C1B1A;text-shadow:0 1px 8px rgba(255,240,210,.6)}
+.btn.cta:is(:focus-visible,.rise) .sun{filter:opacity(0)}
+.btn.cta:is(:focus-visible,.rise) .scene::before{opacity:1}
+.btn.cta:is(:focus-visible,.rise) .dawn{top:30%}
+.btn.cta:is(:focus-visible,.rise) .streak{transform:scaleY(1)}
+@media (hover:hover){
+  .btn.cta:hover{--hz:76%;color:#0C1B1A;text-shadow:0 1px 8px rgba(255,240,210,.6)}
+  .btn.cta:hover .sun{filter:opacity(0)}
+  .btn.cta:hover .scene::before{opacity:1}
+  .btn.cta:hover .dawn{top:30%}
+  .btn.cta:hover .streak{transform:scaleY(1)}
+}
 .btn.cta.gold{--hz:76%;color:#0C1B1A;text-shadow:0 1px 8px rgba(255,240,210,.6)}
 .btn.cta.gold .scene{background:radial-gradient(110px 46px at 84% var(--hz),rgba(255,246,214,.95),rgba(255,226,170,.4) 45%,rgba(255,226,170,0) 76%),linear-gradient(180deg,#F4DCA4 0%,#EFC98C calc(var(--hz) - 1%),#1C5B53 var(--hz),#0F3B37 100%)}
 .btn.cta.gold .scene::after{background:radial-gradient(9px 16px at 84% 0%,rgba(255,236,190,.95),rgba(255,236,190,0) 75%) no-repeat,repeating-linear-gradient(180deg,rgba(255,236,190,0) 0 2px,rgba(255,236,190,.2) 2px 3px),linear-gradient(180deg,#1C5B53,#0F3B37);background-size:100% 100%,100% 6px,100% 100%}
 @keyframes sunset{0%{top:18%;opacity:0}8%{opacity:1}58%{top:calc(var(--hz) - 4%)}72%{top:calc(var(--hz) + 12%);opacity:1}74%{opacity:0}100%{top:18%;opacity:0}}
 @keyframes shimmer{to{background-position:0 0,0 8px,0 0}}
-@media (prefers-reduced-motion: reduce){ .btn.cta .sun,.btn.cta .scene::after{animation:none} .btn.cta .sun{top:40%} }
+@media (prefers-reduced-motion: reduce){ .btn.cta .sun,.btn.cta .scene::after{animation:none} .btn.cta .sun{top:40%} .btn.cta,.btn.cta .sun,.btn.cta .dawn,.btn.cta .streak,.btn.cta .scene::before{transition:none} }
 
 /* off-white paper with a fine grain */
 .paper{background-color:var(--cream);isolation:isolate}
@@ -646,7 +667,7 @@ window.ARKA_DATA = function () { if (!window.__arkaData) { try { window.__arkaDa
   <a class="link" href="#monsoon">Monsoon</a>
   <a class="link" href="#stories">Stories</a>
   <a class="link" href="#faq">FAQ</a>
-  <a class="btn cta sm" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i></span><span>Get a free<span class="lbl-long"> quote</span></span></a>
+  <a class="btn cta sm" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i><i class="dawn"></i><i class="streak"></i></span><span>Get a free<span class="lbl-long"> quote</span></span></a>
   <button class="burger glass-chip" id="burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mnav"><i></i><i></i></button>
 </header>
 <div class="mnav" id="mnav" aria-hidden="true">
@@ -659,7 +680,7 @@ window.ARKA_DATA = function () { if (!window.__arkaData) { try { window.__arkaDa
     <li><a href="#faq">FAQ</a></li>
   </ol></nav>
   <div class="foot-m">
-    <a class="btn cta" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i></span>Get a free quote</a>
+    <a class="btn cta" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i><i class="dawn"></i><i class="streak"></i></span>Get a free quote</a>
     <p class="contact">Call or WhatsApp +91 484 000 0000</p>
   </div>
 </div>
@@ -672,7 +693,7 @@ window.ARKA_DATA = function () { if (!window.__arkaData) { try { window.__arkaDa
         <span class="eyebrow">Arka Energy · Rooftop solar</span>
         <h1><em>Solar power</em> for your Kerala home.</h1>
         <div class="row">
-          <a class="btn cta" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i></span>Get a free quote</a>
+          <a class="btn cta" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i><i class="dawn"></i><i class="streak"></i></span>Get a free quote</a>
           <a class="btn ghost" href="#energy">See savings <span aria-hidden="true">↓</span></a>
         </div>
       </div>
@@ -819,7 +840,7 @@ window.ARKA_DATA = function () { if (!window.__arkaData) { try { window.__arkaDa
           <div><b data-count="14">0</b><span>Districts</span></div>
           <div><b data-count="6.8" data-dec="1">0</b><span>MW installed</span></div>
         </div>
-        <a class="btn cta gold" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i></span>Check your district</a>
+        <a class="btn cta gold" href="#quote"><span class="scene" aria-hidden="true"><i class="sun"></i><i class="dawn"></i><i class="streak"></i></span>Check your district</a>
       </div>
       <div class="kerala reveal" id="kerala"><div class="tip" id="tip"></div></div>
     </div>
@@ -892,7 +913,7 @@ window.ARKA_DATA = function () { if (!window.__arkaData) { try { window.__arkaDa
       </div>
       <p class="err" id="fErr" role="alert"></p>
       <div class="progress"><span id="pLbl">Step 1 of 2</span><div class="track"><div class="fill" id="pFill"></div></div></div>
-      <div class="actions"><button type="button" class="btn ghost" id="fBack" hidden>Back</button><button type="submit" class="btn cta" id="fNext"><span class="scene" aria-hidden="true"><i class="sun"></i></span><span class="lbl">Next</span></button></div>
+      <div class="actions"><button type="button" class="btn ghost" id="fBack" hidden>Back</button><button type="submit" class="btn cta" id="fNext"><span class="scene" aria-hidden="true"><i class="sun"></i><i class="dawn"></i><i class="streak"></i></span><span class="lbl">Next</span></button></div>
       <div class="done" aria-live="polite"><div class="ok"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 11.5l4 4 8-9" stroke="#0C1B1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Thank you. We’ll call you soon.</h3><p class="sub" style="margin-top:8px">An Arka engineer will call within one working day to book your free site survey.</p></div>
     </form>
   </section>

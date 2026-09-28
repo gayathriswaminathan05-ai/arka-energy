@@ -128,6 +128,14 @@
   }
 
   /* ---------- "Scroll" nudge: appears when the visitor pauses, hides the moment they move ---------- */
+  /* ---------- CTA sunrise on touch: there's no hover, so a tap holds the sunrise for a moment ---------- */
+  function initCtaTouch() {
+    $$('.btn.cta').forEach(b => b.addEventListener('pointerdown', e => {
+      if (e.pointerType === 'mouse') return;
+      b.classList.add('rise'); clearTimeout(b._rise); b._rise = setTimeout(() => b.classList.remove('rise'), 1800);
+    }, { passive: true }));
+  }
+
   function initNudge() {
     const el = $('#nudge'); if (!el) return;
     const secs = $$('[data-theme]');
@@ -430,7 +438,7 @@
     go(); addEventListener('load', go);
   }
   function boot() {
-    initImages(); initCalc(); initNav(); initMenu(); initNudge(); initReveal(); initExplore(); initFaq(); initForm(); initDeepLink();
+    initImages(); initCalc(); initNav(); initMenu(); initCtaTouch(); initNudge(); initReveal(); initExplore(); initFaq(); initForm(); initDeepLink();
     const later = () => { const idle = window.requestIdleCallback || (f => setTimeout(f, 60)); idle(() => { initLiquidGlass(); idle(() => { initMap(); idle(initDayLoop); }); }); };
     let started = false; const go = () => { if (!started) { started = true; later(); } };
     addEventListener('arka:ready', go); setTimeout(go, 12000);
