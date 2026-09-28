@@ -507,13 +507,17 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .faq{max-width:900px;margin:0 auto}
 .faq .head{text-align:center;margin-bottom:34px}
 .faq h2{margin-top:0}
-details{background:var(--cream);color:var(--ink);border-radius:26px;margin-bottom:10px;transition:background .3s}
-summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:22px 26px;font:500 16.5px/1.35 var(--sans)}
-summary::-webkit-details-marker{display:none}
-summary i{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;transition:transform .35s var(--ease),background .3s}
-summary i::before{content:"";width:9px;height:9px;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:translateY(-2px) rotate(45deg)}
-details[open] summary i{transform:rotate(180deg);background:var(--gold-2);border-color:transparent}
-details .a{padding:0 26px 24px;max-width:680px;color:#454c54;font-size:15px}
+/* plain list: quiet hairlines between questions, no boxes */
+.faq details{border-top:1px solid rgba(238,240,234,.12);color:var(--t-cream)}
+.faq details:last-of-type{border-bottom:1px solid rgba(238,240,234,.12)}
+.faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:24px;padding:22px 0;font:500 17px/1.4 var(--sans);transition:color .2s}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary:hover{color:#fff}
+.faq summary i{flex:none;width:14px;height:14px;display:grid;place-items:center;transition:transform .35s var(--ease)}
+.faq summary i::before{content:"";width:8px;height:8px;border-right:1.5px solid var(--t-muted);border-bottom:1.5px solid var(--t-muted);transform:translateY(-2px) rotate(45deg);transition:border-color .2s}
+.faq summary:hover i::before,.faq details[open] summary i::before{border-color:var(--gold-2)}
+.faq details[open] summary i{transform:rotate(180deg)}
+.faq details .a{padding:0 38px 26px 0;max-width:680px;color:var(--t-muted);font-size:15.5px;line-height:1.6}
 
 /* ---------- 11 · quote: the next morning ---------- */
 #quote{min-height:124svh;display:grid;grid-template-columns:1fr minmax(320px,470px);gap:40px;align-items:center;padding:clamp(110px,14vh,150px) var(--gutter) clamp(60px,10vh,100px)}
