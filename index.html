@@ -3089,8 +3089,10 @@ function applyRain(k, t) {
     rainU.uTint.value.copy(scene.fog.color).lerp(tmpC.setRGB(1, 1, 1), .45);
     for (const m of rain.sheets.children) m.lookAt(camera.position.x, m.position.y, camera.position.z); }
   shafts.visible = shafts.visible && k < .3; flameU.uI.value *= 1 - k;
-  for (const o of peopleObjs) if (!o.userData.crew) o.visible = k < .5;   // everyone on land goes indoors when it pours; the boatmen carry on
-  if (fishing.line) fishing.line.visible = k < .5;
+  // everyone on land is indoors for the whole monsoon (gone the moment any rain begins, so they never pop out on screen); the helmsman carries on
+  const dry = k <= 0;
+  for (const o of peopleObjs) if (!o.userData.crew) o.visible = dry;
+  if (fishing.line) fishing.line.visible = dry;
 }
 function setVillage(on, win, t) {
   const L = village.userData.lamps, { headM, poolM } = village.userData.lampMeshes, hc = headM.geometry.attributes.color, pc = poolM.geometry.attributes.color;
