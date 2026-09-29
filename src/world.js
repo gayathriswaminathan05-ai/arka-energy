@@ -1938,15 +1938,10 @@ function drawPhone(cv) {
 }
 // scrolling inside the phone: wheel, drag or touch over its screen; it also browses itself when idle
 function overPhone(x, y) { const r = APP.rect; return !!r && x > r.l && x < r.r && y > r.t && y < r.b; }
-addEventListener('wheel', e => {
-  if (!overPhone(e.clientX, e.clientY)) return;
-  const before = APP.target; APP.target = clamp(APP.target + e.deltaY * 1.5, 0, APP.max); APP.last = clock.elapsedTime;
-  if (APP.target !== before) e.preventDefault();
-}, { passive: false });
-addEventListener('pointerdown', e => { if (overPhone(e.clientX, e.clientY)) { APP.drag = { y: e.clientY, s: APP.target }; APP.last = clock.elapsedTime; } });
+// (the wheel is never captured: page scrolling always moves the page, and the app scrolls along with it)
+addEventListener('pointerdown', e => { if (e.pointerType === 'mouse' && overPhone(e.clientX, e.clientY)) { APP.drag = { y: e.clientY, s: APP.target }; APP.last = clock.elapsedTime; } });
 addEventListener('pointermove', e => { if (!APP.drag || !APP.rect) return; const k = SCREEN.h / Math.max(1, APP.rect.b - APP.rect.t); APP.target = clamp(APP.drag.s - (e.clientY - APP.drag.y) * k, 0, APP.max); APP.last = clock.elapsedTime; });
 addEventListener('pointerup', () => { APP.drag = null; });
-addEventListener('touchmove', e => { if (APP.drag) e.preventDefault(); }, { passive: false });
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 
 /* ------------------------------------------------------------------ time of day: one day in an Arka home */
@@ -2293,6 +2288,7 @@ const SHOTS = {
   lady: { pos: new V(-5.4, 1.2, 33.4), tgt: new V(-7.3, .9, 29.7), fov: 32, tod: .08, mob: 0 },   // QA only
 };
 const NIGHT_END = new V(-2.4, 3.2, 55);
+const NIGHT_SHOT = { ...SHOTS.night, pos: SHOTS.night.pos.clone() };   // SHOTS.night, eased toward NIGHT_END as the night section scrolls
 function crPt(p0, p1, p2, p3, s, out) { const s2 = s * s, s3 = s2 * s; return out.set(0, 0, 0).addScaledVector(p0, -.5 * s3 + s2 - .5 * s).addScaledVector(p1, 1.5 * s3 - 2.5 * s2 + 1).addScaledVector(p2, -1.5 * s3 + 2 * s2 + .5 * s).addScaledVector(p3, .5 * s3 - .5 * s2); }
 function heroAt(p, pos, tgt) {
   const K = HERO_KEYS; let i = 0; while (i < K.length - 2 && p > K[i + 1].p) i++;
@@ -2303,17 +2299,25 @@ function heroAt(p, pos, tgt) {
 const winEls = [...document.querySelectorAll('[data-shot]')];
 let anchors = [];
 function measure() { anchors = winEls.map(el => ({ el, key: el.dataset.shot, top: el.getBoundingClientRect().top + scrollY, h: el.offsetHeight })); }
+const ARC = new Float32Array(33), pPrev = new V(), pCur = new V();
 function pathPoint(A, B, p, out) {
   // into / out of the veranda close-up: glide along the camera's own line of sight, clear of pillars
   if (A === SHOTS.app || B === SHOTS.app) {
     const S2 = B === SHOTS.app ? B : A, back = S2.pos.clone().sub(S2.tgt).setY(0).normalize();
-    const ctrl = S2.pos.clone().addScaledVector(back, 7).add(new V(0, 1.4, 0)), u = p;
-    return out.set(0, 0, 0).addScaledVector(A.pos, (1 - u) * (1 - u)).addScaledVector(ctrl, 2 * (1 - u) * u).addScaledVector(B.pos, u * u);
+    const ctrl = S2.pos.clone().addScaledVector(back, 7).add(new V(0, 1.4, 0));
+    const bz = (u, o) => o.set(0, 0, 0).addScaledVector(A.pos, (1 - u) * (1 - u)).addScaledVector(ctrl, 2 * (1 - u) * u).addScaledVector(B.pos, u * u);
+    // even pace along the curve: find the point that is p of the way along its length
+    const N = 32; let L = 0; bz(0, pPrev); ARC[0] = 0;
+    for (let i = 1; i <= N; i++) { bz(i / N, pCur); L += pCur.distanceTo(pPrev); ARC[i] = L; pPrev.copy(pCur); }
+    const goal = p * L; let i = 1; while (i < N && ARC[i] < goal) i++;
+    const f = (goal - ARC[i - 1]) / Math.max(1e-6, ARC[i] - ARC[i - 1]);
+    return bz((i - 1 + clamp(f)) / N, out);
   }
   out.lerpVectors(A.pos, B.pos, p);
   out.y += Math.pow(Math.sin(Math.PI * p), 2) * Math.min(14, A.pos.distanceTo(B.pos) * .25);
   return out;
 }
+const APP_DWELL = .45;   // screens of scrolling spent with the phone before the camera pulls back
 const cam = { pos: HERO_KEYS[0].pos.clone(), tgt: HERO_KEYS[0].tgt.clone(), fov: 27, tod: .04 };
 const want = { pos: new V(), tgt: new V() };
 const VIEW = new URLSearchParams(location.search).get('view');
@@ -2340,15 +2344,19 @@ function choreograph() {
   }
   let i = 0; while (i < anchors.length - 1 && y >= anchors[i + 1].top) i++;
   const A = anchors[i], B = anchors[Math.min(i + 1, anchors.length - 1)];
-  const SA = A.key === 'hero' ? SHOTS.heroEnd : SHOTS[A.key], SB = B.key === 'hero' ? SHOTS.heroEnd : SHOTS[B.key];
+  NIGHT_SHOT.pos.copy(SHOTS.night.pos).lerp(NIGHT_END, smooth(0, 1, nightP));
+  const shotOf = k => k === 'hero' ? SHOTS.heroEnd : k === 'night' ? NIGHT_SHOT : SHOTS[k];
+  const SA = shotOf(A.key), SB = shotOf(B.key);
   // adjacent scenes: fly during the last screen of the first. Scenes separated by content: fly while hidden.
   const adjacent = B.top - (A.top + A.h) < 8;
-  const start = adjacent ? Math.max(A.top, A.top + A.h - vh) : A.top + A.h * .92, end = adjacent ? B.top : Math.max(start + 1, B.top - vh * .08);
-  let p = A === B ? 0 : easeIO(clamp((y - start) / (end - start)));
+  let start = adjacent ? Math.max(A.top, A.top + A.h - vh) : A.top + A.h * .92, end = adjacent ? B.top : Math.max(start + 1, B.top - vh * .08);
+  // leaving the veranda: set off after half a screen with the phone and take a screen and a half over it
+  const fromApp = A.key === 'app' && B.key === 'night';
+  if (fromApp) start = A.top + vh * APP_DWELL;
+  const q = clamp((y - start) / (end - start));
+  let p = A === B ? 0 : fromApp ? q * q * (3 - 2 * q) : easeIO(q);
   pathPoint(SA, SB, p, want.pos);
   want.tgt.lerpVectors(portrait && SA.mt ? SA.mt : SA.tgt, portrait && SB.mt ? SB.mt : SB.tgt, p);
-  if (A.key === 'night' && B.key === 'night') want.pos.lerp(NIGHT_END, easeIO(nightP));
-  else if (A.key === 'night') want.pos.lerp(NIGHT_END, 1 - p);
   const w = W0(); w[A.key === 'hero' ? 'hero' : A.key] += 1 - p; w[B.key === 'hero' ? 'hero' : B.key] += p;
   if (portrait) want.tgt.y -= lerp(SA.mob ?? 2.4, SB.mob ?? 2.4, p);
   return { fov: lerp(SA.fov, SB.fov, p) + (portrait ? 18 : 0), tod: lerp(SA.tod, SB.tod, p), w, heroP: 1, nightP };
@@ -2453,7 +2461,10 @@ function frame() {
   // phone screen (only while it can be seen)
   if (S.w.app > .02) {
     if (t - lastPhone > 1) { drawAppFull(t); lastPhone = t; }
-    if (t - APP.last > 5 && !APP.drag) APP.target = (.5 - .5 * Math.cos(t * .11)) * APP.max;   // idle: browse the app on its own
+    const aA = anchors.find(a => a.key === 'app');
+    if (APP.drag) { /* a mouse drag on the screen scrolls the app directly */ }
+    else if (!VIEW && aA) { const u = clamp((scrollY - aA.top + innerHeight * .35) / (innerHeight * (APP_DWELL + .35))); if (u !== APP.lastU) { APP.lastU = u; APP.target = u * APP.max; } }   // the app scrolls as the page does
+    else if (t - APP.last > 5) APP.target = (.5 - .5 * Math.cos(t * .11)) * APP.max;   // ?view=app: browse on its own
     const ns = lerp(APP.scroll, APP.target, 1 - Math.exp(-dt * 7)); if (Math.abs(ns - APP.scroll) > .4) { APP.scroll = ns; APP.dirty = true; }
     if (APP.dirty) { drawPhone(phone.userData.cv); phone.userData.tex.needsUpdate = true; APP.dirty = false; }
     const { W: pw, Hh: ph } = phone.userData; let l = 1e9, r2 = -1e9, tt = 1e9, bb = -1e9;
